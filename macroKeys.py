@@ -71,7 +71,7 @@ lcd = pygame.Surface(surfaceSize)
 # This is the important bit
 def refresh():
     # We open the TFT screen's framebuffer as a binary file. Note that we will write bytes into it, hence the "wb" operator
-    f = open("/dev/fb1","wb")
+    f = open("/dev/fb0","wb")
     # According to the TFT screen specs, it supports only 16bits pixels depth
     # Pygame surfaces use 24bits pixels depth by default, but the surface itself provides a very handy method to convert it.
     # once converted, we write the full byte buffer of the pygame surface into the TFT screen framebuffer like we would in a plain file:
