@@ -12,6 +12,13 @@ DEFAULT_HID = '/dev/hidg0'
 CONTROL_CODE = 0x02
 CMD_CODE = 0x08
 OPTION_CODE = 0x04
+
+# USB HID Modifier Codes
+LEFT_CTRL = 0x01
+LEFT_SHIFT = 0x02
+LEFT_ALT = 0x04
+LEFT_CMD = 0x08
+
 DEBUG = True
 CONTROL_CODE_AI = 0x01
 
@@ -31,9 +38,12 @@ KEYS_ALLOWED = {
   'VOLUME_UP':      {'rsvd': 32, 'ctrl': CONTROL_CODE, 'kbd': 0x00, 'delay': 0.1, 'ctrl': CONTROL_CODE},
   'VOLUME_DOWN':    {'rsvd': 64, 'ctrl': CONTROL_CODE, 'kbd': 0x00, 'delay': 0.1, 'ctrl': CONTROL_CODE},
   'PAUSE_UNPAUSE':  {'rsvd': 8, 'ctrl': CONTROL_CODE, 'kbd': 0x10, 'delay': 0.1, 'ctrl': CONTROL_CODE},
-  'CMD_SHIFT_M':    {'rsvd': 0, 'ctrl': (CMD_CODE | 0x02), 'kbd': 0x10, 'delay': 0.1},
+  'CMD_SHIFT_M':    {'rsvd': 0, 'ctrl': (LEFT_CMD | LEFT_SHIFT), 'kbd': 0x10, 'delay': 0.1},
   'TEST_A':         {'rsvd': 0, 'ctrl': 0x00, 'kbd': 0x04, 'delay': 0.1},
-  'TEST_SHIFT_A':   {'rsvd': 0, 'ctrl': 0xE0, 'kbd': 0x04, 'delay': 0.1},
+  'TEST_SHIFT_A':   {'rsvd': 0, 'ctrl': LEFT_SHIFT, 'kbd': 0x04, 'delay': 0.1},
+  'TEST_CMD_A':     {'rsvd': 0, 'ctrl': LEFT_CMD, 'kbd': 0x04, 'delay': 0.1},
+  'TEST_ALT_A':     {'rsvd': 0, 'ctrl': LEFT_ALT, 'kbd': 0x04, 'delay': 0.1},
+  'TEST_SHIFT_CMD_ALT_A': {'rsvd': 0, 'ctrl': (LEFT_SHIFT | LEFT_CMD | LEFT_ALT), 'kbd': 0x04, 'delay': 0.1},
 }
 
 # Helper script to send data directly to our HID Gadget emulation device
