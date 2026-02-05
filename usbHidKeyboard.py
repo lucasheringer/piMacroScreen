@@ -44,6 +44,15 @@ KEYS_ALLOWED = {
   'TEST_CMD_A':     {'rsvd': 0, 'ctrl': LEFT_CMD, 'kbd': 0x04, 'delay': 0.1},
   'TEST_ALT_A':     {'rsvd': 0, 'ctrl': LEFT_ALT, 'kbd': 0x04, 'delay': 0.1},
   'TEST_SHIFT_CMD_ALT_A': {'rsvd': 0, 'ctrl': (LEFT_SHIFT | LEFT_CMD | LEFT_ALT), 'kbd': 0x04, 'delay': 0.1},
+  # Raw bit tests - try these to find correct modifier mapping
+  'BIT_0x01_A':     {'rsvd': 0, 'ctrl': 0x01, 'kbd': 0x04, 'delay': 0.1},
+  'BIT_0x02_A':     {'rsvd': 0, 'ctrl': 0x02, 'kbd': 0x04, 'delay': 0.1},
+  'BIT_0x04_A':     {'rsvd': 0, 'ctrl': 0x04, 'kbd': 0x04, 'delay': 0.1},
+  'BIT_0x08_A':     {'rsvd': 0, 'ctrl': 0x08, 'kbd': 0x04, 'delay': 0.1},
+  'BIT_0x10_A':     {'rsvd': 0, 'ctrl': 0x10, 'kbd': 0x04, 'delay': 0.1},
+  'BIT_0x20_A':     {'rsvd': 0, 'ctrl': 0x20, 'kbd': 0x04, 'delay': 0.1},
+  'BIT_0x40_A':     {'rsvd': 0, 'ctrl': 0x40, 'kbd': 0x04, 'delay': 0.1},
+  'BIT_0x80_A':     {'rsvd': 0, 'ctrl': 0x80, 'kbd': 0x04, 'delay': 0.1},
 }
 
 # Helper script to send data directly to our HID Gadget emulation device
