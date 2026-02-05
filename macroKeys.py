@@ -249,6 +249,8 @@ while True:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
                         if btn['id'] == 6:
                             write_report(NULL_CHAR*2+chr(44)+NULL_CHAR*5)
+                            # Release keys
+                            write_report(NULL_CHAR*8)
                         drawButtons()
                         pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
                         # Draw icon or button number on pressed state
