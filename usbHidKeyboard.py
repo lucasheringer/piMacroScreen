@@ -31,7 +31,7 @@ KEYS_ALLOWED = {
   'VOLUME_UP':      {'rsvd': 32, 'ctrl': CONTROL_CODE, 'kbd': 0x00, 'delay': 0.1, 'ctrl': CONTROL_CODE},
   'VOLUME_DOWN':    {'rsvd': 64, 'ctrl': CONTROL_CODE, 'kbd': 0x00, 'delay': 0.1, 'ctrl': CONTROL_CODE},
   'PAUSE_UNPAUSE':  {'rsvd': 8, 'ctrl': CONTROL_CODE, 'kbd': 0x10, 'delay': 0.1, 'ctrl': CONTROL_CODE},
-  'CMD_SHIFT_M':    {'rsvd': 0, 'ctrl': (CMD_CODE | 0x02), 'kbd': 0x10, 'delay': 0.1},
+  'CMD_SHIFT_M':    {'rsvd': 0, 'ctrl': (CONTROL_CODE | 0x02), 'kbd': 0x10, 'delay': 0.1, 'ctrl': CONTROL_CODE},
 }
 
 # Helper script to send data directly to our HID Gadget emulation device
