@@ -28,10 +28,9 @@ pygame.display.set_caption('Macro Keys')
 screen = pygame.display.set_mode((320, 240))
 clock = pygame.time.Clock()
 pygame.mouse.set_visible(False)
-
-for x in range(20):
-    screen.fill((255, 255, 255))
-    pygame.display.flip()
+screen.fill((255, 255, 255))
+pygame.display.flip()
+while True:
     for event in pygame.event.get():
         if(event.type == pygame.MOUSEBUTTONDOWN):
             pos = pygame.mouse.get_pos()
