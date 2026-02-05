@@ -247,8 +247,12 @@ while True:
                         # Highlight the pressed button
                         if btn['id'] == 1:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
+                        if btn['id'] == 3:
+                            write_report(chr(231)+NULL_CHAR+chr(4)+NULL_CHAR*5)
+                            # Release keys
+                            write_report(NULL_CHAR*8)
                         if btn['id'] == 6:
-                            write_report(chr(224)+NULL_CHAR+chr(4)+NULL_CHAR*5)
+                            write_report(chr(227)+NULL_CHAR+chr(4)+NULL_CHAR*5)
                             # Release keys
                             write_report(NULL_CHAR*8)
                         drawButtons()
