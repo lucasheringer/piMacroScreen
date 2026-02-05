@@ -56,7 +56,9 @@
 # - a device to get input from it, e.g. /dev/input/touchscreen
 ##
 
-import pygame, time, evdev, select, math
+import pygame, time, evdev, select, math, subprocess
+subprocess.call("fbtest", shell=True)
+time.sleep(2)
 
 # Very important: the exact pixel size of the TFT screen must be known so we can build graphics at this exact format
 surfaceSize = (320, 240)
