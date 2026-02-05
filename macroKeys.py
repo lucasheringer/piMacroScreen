@@ -248,7 +248,7 @@ while True:
                         if btn['id'] == 1:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
                         if btn['id'] == 6:
-                            write_report(NULL_CHAR*2+chr(44)+NULL_CHAR*5)
+                            write_report(chr(225)+NULL_CHAR+chr(4)+NULL_CHAR*5)
                             # Release keys
                             write_report(NULL_CHAR*8)
                         drawButtons()
