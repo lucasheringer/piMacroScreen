@@ -175,6 +175,9 @@ BUTTON_HEIGHT = surfaceSize[1] // BUTTON_ROWS  # 120 pixels
 # Load SVG icon for button 1
 pause_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/actions/media-playback-pause-symbolic.svg', size=50)
 
+# Load SVG icon for button 6 (row 2, col 3)
+mic_muted_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/microphone-sensitivity-muted-symbolic.svg', size=50)
+
 # Create button rectangles
 buttons = []
 button_id = 1
@@ -182,12 +185,19 @@ for row in range(BUTTON_ROWS):
     for col in range(BUTTON_COLS):
         x = col * BUTTON_WIDTH
         y = row * BUTTON_HEIGHT
+        # Assign icons to specific buttons
+        icon = None
+        if button_id == 1:
+            icon = pause_icon
+        elif button_id == 6:
+            icon = mic_muted_icon
+        
         btn_data = {
             'id': button_id,
             'rect': pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT),
             'color': (100, 100, 100),
             'pressed_color': (255, 0, 0),
-            'icon': pause_icon if button_id == 1 else None
+            'icon': icon
         }
         buttons.append(btn_data)
         button_id += 1
@@ -234,9 +244,14 @@ while True:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
                         drawButtons()
                         pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
-                        text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
-                        text_rect = text.get_rect(center=btn['rect'].center)
-                        lcd.blit(text, text_rect)
+                        # Draw icon or button number on pressed state
+                        if btn['icon'] is not None:
+                            icon_rect = btn['icon'].get_rect(center=btn['rect'].center)
+                            lcd.blit(btn['icon'], icon_rect)
+                        else:
+                            text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
+                            text_rect = text.get_rect(center=btn['rect'].center)
+                            lcd.blit(text, text_rect)
                         refresh()
                         time.sleep(0.3)
                         drawButtons()
