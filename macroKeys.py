@@ -57,6 +57,7 @@
 ##
 
 import pygame, time, evdev, select, math, subprocess
+from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 
@@ -205,6 +206,8 @@ while True:
                     if btn['rect'].collidepoint(p):
                         print("==> BUTTON {0} PRESSED! <==".format(btn['id']))
                         # Highlight the pressed button
+                        if btn['id'] == 1:
+                            send('PAUSE_UNPAUSE', '/dev/hidg0')
                         drawButtons()
                         pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
                         text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
