@@ -33,7 +33,7 @@ KEYS_ALLOWED = {
   'PAUSE_UNPAUSE':  {'rsvd': 8, 'ctrl': CONTROL_CODE, 'kbd': 0x10, 'delay': 0.1, 'ctrl': CONTROL_CODE},
   'CMD_SHIFT_M':    {'rsvd': 0, 'ctrl': (CMD_CODE | 0x02), 'kbd': 0x10, 'delay': 0.1},
   'TEST_A':         {'rsvd': 0, 'ctrl': 0x00, 'kbd': 0x04, 'delay': 0.1},
-  'TEST_SHIFT_A':   {'rsvd': 0, 'ctrl': 0x02e, 'kbd': 0x04, 'delay': 0.1},
+  'TEST_SHIFT_A':   {'rsvd': 0, 'ctrl': 0xE1, 'kbd': 0x04, 'delay': 0.1},
 }
 
 # Helper script to send data directly to our HID Gadget emulation device
