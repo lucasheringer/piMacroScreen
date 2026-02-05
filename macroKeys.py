@@ -58,6 +58,8 @@
 
 import pygame, time, evdev, select, math, subprocess
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
+from io import BytesIO
+import cairosvg
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 
@@ -144,6 +146,19 @@ def getPixelsFromCoordinates(coords):
         y = float(coords [1] - tftOrig [1]) / float(tftAbsDelta [1]) * float(surfaceSize [1])
     return (int(x), int(y))
 
+# Function to load SVG icon and convert to pygame surface
+def load_svg_icon(svg_path, size=60):
+    try:
+        # Convert SVG to PNG in memory with transparent background
+        png_data = BytesIO()
+        cairosvg.svg2png(url=svg_path, write_to=png_data, output_width=size, output_height=size)
+        png_data.seek(0)
+        icon = pygame.image.load(png_data)
+        return icon
+    except Exception as e:
+        print(f"Error loading SVG {svg_path}: {e}")
+        return None
+
 # Was useful to see what pieces I would need from the evdev events
 def printEvent(event):
     print(evdev.categorize(event))
@@ -157,6 +172,9 @@ BUTTON_ROWS = 2
 BUTTON_WIDTH = surfaceSize[0] // BUTTON_COLS  # 106 pixels
 BUTTON_HEIGHT = surfaceSize[1] // BUTTON_ROWS  # 120 pixels
 
+# Load SVG icon for button 1
+pause_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/actions/media-playback-pause-symbolic.svg', size=50)
+
 # Create button rectangles
 buttons = []
 button_id = 1
@@ -164,12 +182,14 @@ for row in range(BUTTON_ROWS):
     for col in range(BUTTON_COLS):
         x = col * BUTTON_WIDTH
         y = row * BUTTON_HEIGHT
-        buttons.append({
+        btn_data = {
             'id': button_id,
             'rect': pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT),
             'color': (100, 100, 100),
-            'pressed_color': (255, 0, 0)
-        })
+            'pressed_color': (255, 0, 0),
+            'icon': pause_icon if button_id == 1 else None
+        }
+        buttons.append(btn_data)
         button_id += 1
 
 # Function to draw all buttons
@@ -177,10 +197,14 @@ def drawButtons():
     lcd.fill((128, 128, 128))  # Background
     for btn in buttons:
         pygame.draw.rect(lcd, btn['color'], btn['rect'], 3)  # Draw border
-        # Draw button number in center
-        text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
-        text_rect = text.get_rect(center=btn['rect'].center)
-        lcd.blit(text, text_rect)
+        # Draw icon or button number in center
+        if btn['icon'] is not None:
+            icon_rect = btn['icon'].get_rect(center=btn['rect'].center)
+            lcd.blit(btn['icon'], icon_rect)
+        else:
+            text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
+            text_rect = text.get_rect(center=btn['rect'].center)
+            lcd.blit(text, text_rect)
 
 # Initial draw
 drawButtons()
