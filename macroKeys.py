@@ -14,14 +14,14 @@ PURPLE = (102, 0, 102)
 LIGHTPURPLE = (153, 0, 153)
 BLACK = (0, 0, 0)
 
-screen = pygame.display.set_mode((320, 240))
-clock = pygame.time.Clock()
-
 os.putenv('SDL_FBDEV', '/dev/fb0')
 # os.putenv('SDL_MOUSEDRV', 'TSLIB')
 os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
-screen.display.set_caption('Macro Keys')
-screen.mouse.set_visible(False)
+pygame.display.set_caption('Macro Keys')
+pygame.mouse.set_visible(False)
+
+screen = pygame.display.set_mode((320, 240))
+clock = pygame.time.Clock()
 
 for x in range(20):
     screen.fill((0, 0, 0))
