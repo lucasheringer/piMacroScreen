@@ -73,13 +73,14 @@ def send(key_name, hid_path=DEFAULT_HID):
     if DEBUG:
         print("Requested to send {} to {}".format(key_name, hid_path))
     # Sending keypress (down)
-    send_to_gadget(hid_path, reserved_code=KEYS_ALLOWED[key_name]['rsvd'], control_code=KEYS_ALLOWED[key_name]['ctrl'], keyboard_code=KEYS_ALLOWED[key_name]['kbd'])
+    control_code = KEYS_ALLOWED[key_name]['ctrl']
+    send_to_gadget(hid_path, reserved_code=KEYS_ALLOWED[key_name]['rsvd'], control_code=control_code, keyboard_code=KEYS_ALLOWED[key_name]['kbd'])
     # Wait
     if DEBUG:
         print("Waiting {} second(s)...".format(KEYS_ALLOWED[key_name]['delay']))
     time.sleep(KEYS_ALLOWED[key_name]['delay'])
-    # Send end of keypress (up)
-    send_to_gadget(hid_path, reserved_code=0)
+    # Send end of keypress (up) - must use SAME control code
+    send_to_gadget(hid_path, reserved_code=0, control_code=control_code)
 
 
 # If run via the CLI
