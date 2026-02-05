@@ -25,7 +25,7 @@ clock = pygame.time.Clock()
 pygame.mouse.set_visible(False)
 
 for x in range(20):
-    screen.fill((0, 0, 0))
+    screen.fill((255, 0, 0))
     pygame.display.flip()
     # clock.tick(1)
     # screen.fill((200, 200, 0))
@@ -37,11 +37,7 @@ for x in range(20):
             x, y = pos
             if x >= 250 and x <= 290 and y >= 160 and y <= 210:
                 while loopCheck == True:
-                    #print(str(event.type)+str(pos))
-                    pygame.draw.rect(screen,WHITE,(90, 60, 140, 40))
-                    pygame.draw.rect(screen,SHADOW,(90, 100, 140, 40))
-                    pygame.draw.rect(screen,BLACK,(90, 100, 140, 2))
-                    pygame.draw.rect(screen,BLACK,(160, 100, 2, 40))
+                    print(str(event.type)+str(pos))
                     pygame.display.update()
                     clock.tick(5)
                     for event in pygame.event.get():
