@@ -62,6 +62,11 @@ from io import BytesIO
 import cairosvg
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
+NULL_CHAR = chr(0)
+
+def write_report(report):
+    with open('/dev/hidg0', 'rb+') as fd:
+        fd.write(report.encode())
 
 # Very important: the exact pixel size of the TFT screen must be known so we can build graphics at this exact format
 surfaceSize = (320, 240)
@@ -243,7 +248,7 @@ while True:
                         if btn['id'] == 1:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
                         if btn['id'] == 6:
-                            send('CMD_SHIFT_M', '/dev/hidg0')
+                            write_report(chr(32)+NULL_CHAR+chr(4)+NULL_CHAR*5)
                         drawButtons()
                         pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
                         # Draw icon or button number on pressed state
