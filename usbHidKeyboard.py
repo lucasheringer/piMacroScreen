@@ -56,15 +56,16 @@ KEYS_ALLOWED = {
 }
 
 # Helper script to send data directly to our HID Gadget emulation device
-def send_to_gadget(hid_path, reserved_code, control_code=CONTROL_CODE, keyboard_code=0x00):
+def send_to_gadget(hid_path, reserved_code, control_code=CONTROL_CODE, keyboard_code=0x00, report_id=1):
     if DEBUG:
-        print("Sending {}:{}:{} to {}".format(control_code, reserved_code, keyboard_code, hid_path))
+        print("Sending Report{}:Mod{}:Res{}:Key{} to {}".format(report_id, control_code, reserved_code, keyboard_code, hid_path))
 
     with open(hid_path, 'wb+') as hid_handle:
         buf = [0] * 8
-        buf[0] = control_code
-        buf[1] = reserved_code
-        buf[2] = keyboard_code
+        buf[0] = report_id           # Report ID (1 for keyboard)
+        buf[1] = control_code        # Modifier keys (was in wrong position!)
+        buf[2] = reserved_code       # Reserved
+        buf[3] = keyboard_code       # Keyboard code
         hid_handle.write(bytearray(buf))
         hid_handle.write(bytearray([0] * 8))
 
@@ -72,15 +73,18 @@ def send_to_gadget(hid_path, reserved_code, control_code=CONTROL_CODE, keyboard_
 def send(key_name, hid_path=DEFAULT_HID):
     if DEBUG:
         print("Requested to send {} to {}".format(key_name, hid_path))
+    # Determine report ID (1=keyboard, 2=multimedia)
+    report_id = 1 if KEYS_ALLOWED[key_name]['rsvd'] == 0 else 2
+    
     # Sending keypress (down)
     control_code = KEYS_ALLOWED[key_name]['ctrl']
-    send_to_gadget(hid_path, reserved_code=KEYS_ALLOWED[key_name]['rsvd'], control_code=control_code, keyboard_code=KEYS_ALLOWED[key_name]['kbd'])
+    send_to_gadget(hid_path, reserved_code=KEYS_ALLOWED[key_name]['rsvd'], control_code=control_code, keyboard_code=KEYS_ALLOWED[key_name]['kbd'], report_id=report_id)
     # Wait
     if DEBUG:
         print("Waiting {} second(s)...".format(KEYS_ALLOWED[key_name]['delay']))
     time.sleep(KEYS_ALLOWED[key_name]['delay'])
     # Send end of keypress (up) - must use SAME control code
-    send_to_gadget(hid_path, reserved_code=0, control_code=control_code)
+    send_to_gadget(hid_path, reserved_code=0, control_code=0x00, report_id=report_id)
 
 
 # If run via the CLI
