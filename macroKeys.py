@@ -204,7 +204,7 @@ for row in range(BUTTON_ROWS):
 
 # Function to draw all buttons
 def drawButtons():
-    lcd.fill((128, 128, 128))  # Background
+    lcd.fill((255, 255, 255))  # Background
     for btn in buttons:
         pygame.draw.rect(lcd, btn['color'], btn['rect'], 3)  # Draw border
         # Draw icon or button number in center
@@ -242,6 +242,8 @@ while True:
                         # Highlight the pressed button
                         if btn['id'] == 1:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
+                        if btn['id'] == 6:
+                            send('CMD_SHIFT_M', '/dev/hidg0')
                         drawButtons()
                         pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
                         # Draw icon or button number on pressed state
