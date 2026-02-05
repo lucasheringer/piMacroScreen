@@ -44,12 +44,16 @@ def send_to_gadget(hid_path, reserved_code, control_code=CONTROL_CODE, keyboard_
         print("Sending {}:{}:{} to {}".format(control_code, reserved_code, keyboard_code, hid_path))
 
     with open(hid_path, 'wb+') as hid_handle:
-        buf = [0] * 8
-        buf[0] = control_code
-        buf[1] = reserved_code
-        buf[2] = keyboard_code
+        buf = [0] * 9
+        buf[0] = 0x01              # Report ID for keyboard
+        buf[1] = control_code      # Modifiers
+        buf[2] = reserved_code     # Reserved
+        buf[3] = keyboard_code     # Key code
         hid_handle.write(bytearray(buf))
-        hid_handle.write(bytearray([0] * 8))
+        # Send release (all zeros except Report ID)
+        buf_release = [0] * 9
+        buf_release[0] = 0x01
+        hid_handle.write(bytearray(buf_release))
 
 # Helper script to translate KEYS_ALLOWED into the above
 def send(key_name, hid_path=DEFAULT_HID):
@@ -61,8 +65,11 @@ def send(key_name, hid_path=DEFAULT_HID):
     if DEBUG:
         print("Waiting {} second(s)...".format(KEYS_ALLOWED[key_name]['delay']))
     time.sleep(KEYS_ALLOWED[key_name]['delay'])
-    # Send end of keypress (up)
-    send_to_gadget(hid_path, reserved_code=0)
+    # Send end of keypress (up) - with Report ID but all zeros
+    with open(hid_path, 'wb+') as hid_handle:
+        buf_release = [0] * 9
+        buf_release[0] = 0x01  # Report ID
+        hid_handle.write(bytearray(buf_release))
 
 
 # If run via the CLI
