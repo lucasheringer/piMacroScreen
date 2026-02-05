@@ -87,6 +87,7 @@ def refresh():
 
 # Here we just blink the screen background in a few colors with the "Hello World!" text
 pygame.font.init()
+pygame.mouse.set_visible(False)
 defaultFont = pygame.font.SysFont(None,30)
 
 # lcd.fill((255,0,0))
