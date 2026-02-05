@@ -89,20 +89,21 @@ def refresh():
 pygame.font.init()
 defaultFont = pygame.font.SysFont(None,30)
 
-lcd.fill((255,0,0))
-lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
-refresh()
+# lcd.fill((255,0,0))
+# lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
+# refresh()
 
-lcd.fill((0, 255, 0))
-lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
-refresh()
+# lcd.fill((0, 255, 0))
+# lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
+# refresh()
 
-lcd.fill((0,0,255))
-lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
-refresh()
+# lcd.fill((0,0,255))
+# lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
+# refresh()
 
 lcd.fill((128, 128, 128))
 lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
+
 refresh()
 
 ##
@@ -148,7 +149,42 @@ def printEvent(event):
     print("Type: {0}".format(event.type))
     print("Code: {0}".format(event.code))
 
-# This loop allows us to write red dots on the screen where we touch it 
+# Define 6 buttons in a 2x3 grid (2 rows, 3 columns)
+BUTTON_COLS = 3
+BUTTON_ROWS = 2
+BUTTON_WIDTH = surfaceSize[0] // BUTTON_COLS  # 106 pixels
+BUTTON_HEIGHT = surfaceSize[1] // BUTTON_ROWS  # 120 pixels
+
+# Create button rectangles
+buttons = []
+button_id = 1
+for row in range(BUTTON_ROWS):
+    for col in range(BUTTON_COLS):
+        x = col * BUTTON_WIDTH
+        y = row * BUTTON_HEIGHT
+        buttons.append({
+            'id': button_id,
+            'rect': pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT),
+            'color': (100, 100, 100),
+            'pressed_color': (255, 0, 0)
+        })
+        button_id += 1
+
+# Function to draw all buttons
+def drawButtons():
+    lcd.fill((128, 128, 128))  # Background
+    for btn in buttons:
+        pygame.draw.rect(lcd, btn['color'], btn['rect'], 3)  # Draw border
+        # Draw button number in center
+        text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
+        text_rect = text.get_rect(center=btn['rect'].center)
+        lcd.blit(text, text_rect)
+
+# Initial draw
+drawButtons()
+refresh()
+
+# Main event loop
 while True:
     # TODO get the right ecodes instead of int
     r,w,x = select.select([touch], [], [])
@@ -159,11 +195,24 @@ while True:
             elif event.code == 0:
                 Y = event.value
         elif event.type == evdev.ecodes.EV_KEY:
-            if event.code == 330 and event.value == 1:
-                printEvent(event)
+            if event.code == 330 and event.value == 1:  # Touch press
                 p = getPixelsFromCoordinates((X, Y))
-                print("TFT: {0}:{1} | Pixels: {2}:{3}".format(X, Y, p [0], p [1]))
-                pygame.draw.circle(lcd, (255, 0, 0), p , 2, 2)
-                refresh()
+                print("Touch detected at Pixels: {0}:{1}".format(p[0], p[1]))
+                
+                # Check which button was touched
+                for btn in buttons:
+                    if btn['rect'].collidepoint(p):
+                        print("==> BUTTON {0} PRESSED! <==".format(btn['id']))
+                        # Highlight the pressed button
+                        drawButtons()
+                        pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
+                        text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
+                        text_rect = text.get_rect(center=btn['rect'].center)
+                        lcd.blit(text, text_rect)
+                        refresh()
+                        time.sleep(0.3)
+                        drawButtons()
+                        refresh()
+                        break
 
 exit()
