@@ -2,6 +2,13 @@ import os
 import pygame
 import subprocess
 
+# Set environment variables BEFORE pygame initializes
+os.putenv('SDL_FBDEV', '/dev/fb0')
+os.putenv('SDL_MOUSEDRV', 'TSLIB')
+os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
+
+pygame.init()
+
 # Define basic colors
 SHADOW = (192, 192, 192)
 WHITE = (255, 255, 255)
@@ -15,10 +22,8 @@ PURPLE = (102, 0, 102)
 LIGHTPURPLE = (153, 0, 153)
 BLACK = (0, 0, 0)
 
-os.putenv('TSLIB_FBDEVICE', '/dev/fb0')
-os.putenv('TSLIB_MOUSEDRV', 'TSLIB')
-os.putenv('TSLIB_TSDEVICE', '/dev/input/touchscreen')
 pygame.display.set_caption('Macro Keys')
+
 
 screen = pygame.display.set_mode((320, 240))
 clock = pygame.time.Clock()
