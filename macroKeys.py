@@ -57,8 +57,14 @@
 ##
 
 import pygame, time, evdev, select, math, subprocess
+import sys
 subprocess.call("fbtest", shell=True)
 subprocess.call("setterm -cursor off", shell=True)
+
+# Redirect console output to prevent terminal cursor on LCD
+sys.stdout = open('/dev/null', 'w')
+sys.stderr = open('/dev/null', 'w')
+
 time.sleep(2)
 
 # Very important: the exact pixel size of the TFT screen must be known so we can build graphics at this exact format
