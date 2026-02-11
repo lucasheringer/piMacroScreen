@@ -1,52 +1,3 @@
-# import os
-# import pygame
-# import subprocess
-
-# # Set environment variables BEFORE pygame initializes
-# os.putenv('SDL_FBDEV', '/dev/fb0')
-# os.putenv('SDL_MOUSEDRV', 'TSLIB')
-# os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
-
-# pygame.init()
-
-# # Define basic colors
-# SHADOW = (192, 192, 192)
-# WHITE = (255, 255, 255)
-# LIGHTGREEN = (0, 255, 0 )
-# GREEN = (0, 200, 0 )
-# BLUE = (0, 0, 128)
-# LIGHTBLUE = (0, 0, 255)
-# RED = (200, 0, 0 )
-# LIGHTRED = (255, 100, 100)
-# PURPLE = (102, 0, 102)
-# LIGHTPURPLE = (153, 0, 153)
-# BLACK = (0, 0, 0)
-
-# pygame.display.set_caption('Macro Keys')
-
-
-# screen = pygame.display.set_mode((320, 240))
-# clock = pygame.time.Clock()
-# pygame.mouse.set_visible(False)
-# screen.fill((255, 255, 255))
-# pygame.display.flip()
-# while True:
-#     for event in pygame.event.get():
-#         if(event.type == pygame.MOUSEBUTTONDOWN):
-#             pos = pygame.mouse.get_pos()
-#             x, y = pos
-#             print(f"[TOUCHSCREEN] Button DOWN - Position: X={x}, Y={y}")
-#         elif(event.type == pygame.MOUSEBUTTONUP):
-#             pos = pygame.mouse.get_pos()
-#             x, y = pos
-#             print(f"[TOUCHSCREEN] Button UP - Position: X={x}, Y={y}")
-#         elif(event.type == pygame.MOUSEMOTION):
-#             pos = pygame.mouse.get_pos()
-#             x, y = pos
-#             print(f"[TOUCHSCREEN] Motion - Position: X={x}, Y={y}")
-
-#     clock.tick(1)
-
 #!/usr/bin/python3
 
 ##
@@ -98,18 +49,6 @@ def refresh():
 pygame.font.init()
 pygame.mouse.set_visible(False)
 defaultFont = pygame.font.SysFont(None,30)
-
-# lcd.fill((255,0,0))
-# lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
-# refresh()
-
-# lcd.fill((0, 255, 0))
-# lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
-# refresh()
-
-# lcd.fill((0,0,255))
-# lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
-# refresh()
 
 lcd.fill((128, 128, 128))
 lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
@@ -178,17 +117,26 @@ BUTTON_ROWS = 2
 BUTTON_WIDTH = surfaceSize[0] // BUTTON_COLS  # 106 pixels
 BUTTON_HEIGHT = surfaceSize[1] // BUTTON_ROWS  # 120 pixels
 
-# Load SVG icon for button 1
+# Load SVG icon for button 1 (row 1, col 1)
 pause_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/actions/media-playback-pause-symbolic.svg', size=50)
+
+# Load SVG icon for button 3 (row 1, col 2)
+vol_up_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/audio-volume-high-symbolic-rtl.svg', size=50)
+
+# Load SVG icon for button 3 (row 2, col 2)
+vol_down_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/audio-volume-low-symbolic-rtl.svg', size=50)
 
 # Load SVG icon for button 6 (row 2, col 3)
 mic_muted_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/microphone-sensitivity-muted-symbolic.svg', size=50)
 
-# Load SVG icon for button 3 (row 2, col 3)
-sys_lock_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/system-lock-screen-symbolic.svg', size=50)
+# # Load SVG icon for button 3 (row 2, col 3)
+# sys_lock_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/system-lock-screen-symbolic.svg', size=50)
 
-# Load SVG icon for button 3 (row 2, col 3)
+# Load SVG icon for button 3 (row 1, col 3)
 act_unav_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/actions/action-unavailable-symbolic.svg', size=50)
+
+# Load SVG icon for button 3 (row 1, col 3)
+media_tape_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/devices/media-tape-symbolic.svg', size=50)
 
 # Create button rectangles
 buttons = []
@@ -201,8 +149,14 @@ for row in range(BUTTON_ROWS):
         icon = None
         if button_id == 1:
             icon = pause_icon
+        elif button_id == 2:
+            icon = vol_up_icon
         elif button_id == 3:
             icon = act_unav_icon
+        elif button_id == 4:
+            icon = media_tape_icon
+        elif button_id == 5:
+            icon = vol_down_icon
         elif button_id == 6:
             icon = mic_muted_icon
         
@@ -256,12 +210,18 @@ while True:
                         # Highlight the pressed button
                         if btn['id'] == 1:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
+                        if btn['id'] == 4:
+                            send('VOLUME_UP', '/dev/hidg0')
                         if btn['id'] == 3:
                             # Send Report ID 1 + modifiers (Ctrl+Option+Cmd) + 'm'
                             # Modifiers: Left Ctrl=0x01, Left Alt(Option)=0x04, Left GUI(Cmd)=0x08 -> 0x0D
                             write_report(chr(1) + chr(0x0D) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
                             # Release keys (Report ID + 8 zero bytes)
                             write_report(chr(1) + NULL_CHAR*8)
+                        if btn['id'] == 4:
+                            send('PLAY', '/dev/hidg0')
+                        if btn['id'] == 5:
+                            send('VOLUME_DOWN', '/dev/hidg0')
                         if btn['id'] == 6:
                             # Send Report ID 1 + modifiers (Cmd+Shift) + 'm'
                             write_report(chr(1) + chr(0x0A) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
