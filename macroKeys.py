@@ -57,6 +57,7 @@
 ##
 
 import pygame, time, evdev, select, math, subprocess
+import sys
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
 import cairosvg
@@ -252,9 +253,10 @@ while True:
                             # Release keys
                             write_report(NULL_CHAR*8)
                         if btn['id'] == 6:
-                            write_report(chr(227)+NULL_CHAR+chr(4)+NULL_CHAR*5)
-                            # Release keys
-                            write_report(NULL_CHAR*8)
+                            # Send Report ID 1 + modifiers (Cmd+Shift) + 'm'
+                            write_report(chr(1) + chr(0x0A) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
+                            # Release keys (Report ID + 8 zero bytes)
+                            write_report(chr(1) + NULL_CHAR*8)
                         drawButtons()
                         pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
                         # Draw icon or button number on pressed state
