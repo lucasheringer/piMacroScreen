@@ -184,6 +184,9 @@ pause_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/actions/media-play
 # Load SVG icon for button 6 (row 2, col 3)
 mic_muted_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/microphone-sensitivity-muted-symbolic.svg', size=50)
 
+# Load SVG icon for button 3 (row 2, col 3)
+sys_lock_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/system-lock-screen-symbolic.svg', size=50)
+
 # Create button rectangles
 buttons = []
 button_id = 1
@@ -195,6 +198,8 @@ for row in range(BUTTON_ROWS):
         icon = None
         if button_id == 1:
             icon = pause_icon
+        elif button_id == 3:
+            icon = sys_lock_icon
         elif button_id == 6:
             icon = mic_muted_icon
         
@@ -249,12 +254,14 @@ while True:
                         if btn['id'] == 1:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
                         if btn['id'] == 3:
-                            write_report(chr(231)+NULL_CHAR+chr(4)+NULL_CHAR*5)
-                            # Release keys
-                            write_report(NULL_CHAR*8)
-                        if btn['id'] == 6:
                             # Send Report ID 1 + modifiers (Cmd+Shift) + 'm'
                             write_report(chr(1) + chr(0x0A) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
+                            # Release keys (Report ID + 8 zero bytes)
+                            write_report(chr(1) + NULL_CHAR*8)
+                        if btn['id'] == 6:
+                            # Send Report ID 1 + modifiers (Ctrl+Option+Cmd) + 'm'
+                            # Modifiers: Left Ctrl=0x01, Left Alt(Option)=0x04, Left GUI(Cmd)=0x08 -> 0x0D
+                            write_report(chr(1) + chr(0x0D) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
                             # Release keys (Report ID + 8 zero bytes)
                             write_report(chr(1) + NULL_CHAR*8)
                         drawButtons()
