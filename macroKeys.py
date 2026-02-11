@@ -210,7 +210,7 @@ while True:
                         # Highlight the pressed button
                         if btn['id'] == 1:
                             send('PAUSE_UNPAUSE', '/dev/hidg0')
-                        if btn['id'] == 4:
+                        if btn['id'] == 2:
                             send('VOLUME_UP', '/dev/hidg0')
                         if btn['id'] == 3:
                             # Send Report ID 1 + modifiers (Ctrl+Option+Cmd) + 'm'
