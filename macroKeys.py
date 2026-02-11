@@ -52,7 +52,8 @@ defaultFont = pygame.font.SysFont(None,30)
 
 lcd.fill((128, 128, 128))
 #load image
-bg = pygame.image.load("bg.png").convert()
+# bg = pygame.image.load("bg.png").convert()
+# lcd.blit(bg, (0, 0))
 lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
 
 refresh()
