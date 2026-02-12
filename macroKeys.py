@@ -36,10 +36,7 @@ lcd = pygame.display.set_mode(surfaceSize, 0, 16)
 def refresh():
     fb.seek(0)
     fb.write(lcd.get_buffer().raw)
-
-lcd.fill((255,0,0))
-refresh()
-time.sleep(10)
+    fb.close()
 
 try:
     # Load the background image
