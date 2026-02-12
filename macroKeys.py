@@ -31,8 +31,15 @@ pygame.init()
 lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
 try:
-    bg_image = pygame.image.load("bg.png").convert()
+    # Load the background image
+    bg_image = pygame.image.load("bg.png")
     print(f"Background image loaded successfully (dimensions: {bg_image.get_size()})")
+    
+    # Convert it to match the LCD surface format
+    if bg_image.get_size() != surfaceSize:
+        bg_image = pygame.transform.scale(bg_image, surfaceSize)
+        print(f"IN IF - Background image loaded successfully (dimensions: {bg_image.get_size()})")
+    bg_image = bg_image.convert()
 except pygame.error as e:
     print(f"Failed to load background image: {e}")
     bg_image = None
@@ -58,10 +65,6 @@ pygame.mouse.set_visible(False)
 defaultFont = pygame.font.SysFont(None,30)
 
 lcd.fill((128, 128, 128))
-#load image
-# bg = pygame.image.load("bg.png").convert()
-# lcd.blit(bg, (0, 0))
-lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
 
 refresh()
 
