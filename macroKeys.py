@@ -25,10 +25,14 @@ surfaceSize = (320, 240)
 
 # Note that we don't instantiate any display!
 pygame.init()
+#load image
+bg = pygame.image.load("bg.png").convert()
+
 
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
 lcd = pygame.Surface(surfaceSize)
+lcd.blit(bg, (0, 0))
 
 # This is the important bit
 def refresh():
@@ -49,10 +53,6 @@ def refresh():
 pygame.font.init()
 pygame.mouse.set_visible(False)
 defaultFont = pygame.font.SysFont(None,30)
-
-#load image
-# bg = pygame.image.load("bg.png").convert()
-# lcd.blit(bg, (0, 0))
 
 refresh()
 
