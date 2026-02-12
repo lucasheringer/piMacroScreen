@@ -15,7 +15,6 @@ import cairosvg
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
-fb = open("/dev/fb0", "wb", buffering=0)
 
 def write_report(report):
     with open('/dev/hidg0', 'rb+') as fd:
@@ -30,13 +29,13 @@ pygame.init()
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
 lcd = pygame.display.set_mode(surfaceSize, 0, 16)
+fb = open("/dev/fb0", "wb", buffering=0)
 #lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
 
 def refresh():
     fb.seek(0)
     fb.write(lcd.get_buffer().raw)
-    fb.close()
 
 try:
     # Load the background image
