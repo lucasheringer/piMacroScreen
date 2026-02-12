@@ -28,11 +28,10 @@ pygame.init()
 
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
-
+lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
 try:
     bg_image = pygame.image.load("bg.png").convert()
-    lcd = pygame.Surface(surfaceSize)
     print(f"Background image loaded successfully (dimensions: {bg_image.get_size()})")
 except pygame.error as e:
     print(f"Failed to load background image: {e}")
