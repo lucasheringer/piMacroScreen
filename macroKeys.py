@@ -36,8 +36,6 @@ fb = open("/dev/fb0", "wb", buffering=0)
 def refresh():
     fb.seek(0)
     fb.write(lcd.get_buffer().raw)
-    fb.flush()
-    os.fsync(fb.fileno())
 
 try:
     # Load the background image
