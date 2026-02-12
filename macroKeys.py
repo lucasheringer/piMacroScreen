@@ -29,6 +29,7 @@ pygame.init()
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
 lcd = pygame.Surface(surfaceSize)
+bg_image = pygame.image.load("bg.png").convert()
 
 # This is the important bit
 def refresh():
@@ -175,7 +176,8 @@ for row in range(BUTTON_ROWS):
 
 # Function to draw all buttons
 def drawButtons():
-    lcd.fill((255, 255, 255))  # Background
+    # lcd.fill((255, 255, 255))  # Background
+    lcd.blit(bg_image, (0, 0))
     for btn in buttons:
         pygame.draw.rect(lcd, btn['color'], btn['rect'], 3)  # Draw border
         # Draw icon or button number in center
