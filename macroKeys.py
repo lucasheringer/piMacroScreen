@@ -60,10 +60,9 @@ except pygame.error as e:
 #     time.sleep(0.1)
 
 def refresh():
+    view = lcd.get_view("2")   # 2 bytes per pixel (16-bit)
     with open("/dev/fb0", "wb") as f:
-        buf = pygame.image.tostring(lcd, "RGB565")
-        f.write(buf)
-    time.sleep(0.01)
+        f.write(view)
 
 # Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
 # we can use the usual pygame primitives to draw on our surface before calling the refresh function.
