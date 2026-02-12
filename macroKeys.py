@@ -8,7 +8,7 @@
 ##
 
 import pygame, time, evdev, select, math, subprocess
-import sys
+import os, sys
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
 import cairosvg
@@ -36,6 +36,8 @@ fb = open("/dev/fb0", "wb", buffering=0)
 def refresh():
     fb.seek(0)
     fb.write(lcd.get_buffer().raw)
+    fb.flush()
+    os.fsync(fb.fileno())
 
 try:
     # Load the background image
