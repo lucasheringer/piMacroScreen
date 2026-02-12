@@ -28,7 +28,6 @@ pygame.init()
 
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
-lcd = pygame.display.set_mode((320, 240))
 lcd = pygame.display.set_mode(surfaceSize, 0, 16)
 #lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
@@ -60,9 +59,9 @@ except pygame.error as e:
 #     time.sleep(0.1)
 
 def refresh():
-    view = lcd.get_view("2")   # 2 bytes per pixel (16-bit)
+    view = lcd.get_view("2")
     with open("/dev/fb0", "wb") as f:
-        f.write(view)
+        f.write(view.tobytes())   # ← IMPORTANT
 
 # Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
 # we can use the usual pygame primitives to draw on our surface before calling the refresh function.
