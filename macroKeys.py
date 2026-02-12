@@ -15,6 +15,7 @@ import cairosvg
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
+fb = open("/dev/fb0", "wb", buffering=0)
 
 def write_report(report):
     with open('/dev/hidg0', 'rb+') as fd:
@@ -33,8 +34,8 @@ lcd = pygame.display.set_mode(surfaceSize, 0, 16)
 # At the top of your code, after creating lcd
 
 def refresh():
-    with open("/dev/fb0", "wb") as f:
-        f.write(lcd.get_buffer().raw)
+    fb.seek(0)
+    fb.write(lcd.get_buffer().raw)
 
 lcd.fill((255,0,0))
 refresh()
