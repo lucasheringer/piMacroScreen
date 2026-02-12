@@ -23,6 +23,13 @@ def write_report(report):
 # Very important: the exact pixel size of the TFT screen must be known so we can build graphics at this exact format
 surfaceSize = (320, 240)
 
+# Note that we don't instantiate any display!
+pygame.init()
+
+# The pygame surface we are going to draw onto. 
+# /!\ It must be the exact same size of the target display /!\
+lcd = pygame.Surface(surfaceSize)
+# At the top of your code, after creating lcd
 
 try:
     # Load the background image
@@ -37,14 +44,6 @@ try:
 except pygame.error as e:
     print(f"Failed to load background image: {e}")
     bg_image = None
-
-# Note that we don't instantiate any display!
-pygame.init()
-
-# The pygame surface we are going to draw onto. 
-# /!\ It must be the exact same size of the target display /!\
-lcd = pygame.Surface(surfaceSize)
-# At the top of your code, after creating lcd
 
 # This is the important bit
 def refresh():
