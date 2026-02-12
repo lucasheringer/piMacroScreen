@@ -246,7 +246,6 @@ while True:
                             text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
                             text_rect = text.get_rect(center=btn['rect'].center)
                             lcd.blit(text, text_rect)
-                        refresh()
                         time.sleep(0.3)
                         drawButtons()
                         refresh()
