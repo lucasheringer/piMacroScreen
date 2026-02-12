@@ -32,6 +32,7 @@ lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
 try:
     bg_image = pygame.image.load("bg.png").convert()
+    print(f"Background image loaded successfully (dimensions: {bg_image.get_size()})")
 except pygame.error as e:
     print(f"Failed to load background image: {e}")
     bg_image = None
