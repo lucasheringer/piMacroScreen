@@ -61,11 +61,6 @@ def refresh():
 # Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
 # we can use the usual pygame primitives to draw on our surface before calling the refresh function.
 
-# Here we just blink the screen background in a few colors with the "Hello World!" text
-pygame.font.init()
-pygame.mouse.set_visible(False)
-defaultFont = pygame.font.SysFont(None,30)
-
 refresh()
 
 ##
