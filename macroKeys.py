@@ -33,9 +33,9 @@ fb = open("/dev/fb0", "wb", buffering=0)
 #lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
 
-def refresh():
-    fb.seek(0)
-    fb.write(lcd.get_buffer().raw)
+# def refresh():
+#     fb.seek(0)
+#     fb.write(lcd.get_buffer().raw)
 
 try:
     # Load the background image
@@ -52,16 +52,16 @@ except pygame.error as e:
     bg_image = None
 
 # This is the important bit
-# def refresh():
-#     # We open the TFT screen's framebuffer as a binary file. Note that we will write bytes into it, hence the "wb" operator
-#     f = open("/dev/fb0","wb")
-#     # According to the TFT screen specs, it supports only 16bits pixels depth
-#     # Pygame surfaces use 24bits pixels depth by default, but the surface itself provides a very handy method to convert it.
-#     # once converted, we write the full byte buffer of the pygame surface into the TFT screen framebuffer like we would in a plain file:
-#     f.write(lcd.get_buffer())
-#     # We can then close our access to the framebuffer
-#     f.close()
-#     time.sleep(0.1)
+def refresh():
+    # We open the TFT screen's framebuffer as a binary file. Note that we will write bytes into it, hence the "wb" operator
+    f = open("/dev/fb0","wb")
+    # According to the TFT screen specs, it supports only 16bits pixels depth
+    # Pygame surfaces use 24bits pixels depth by default, but the surface itself provides a very handy method to convert it.
+    # once converted, we write the full byte buffer of the pygame surface into the TFT screen framebuffer like we would in a plain file:
+    f.write(lcd.get_buffer())
+    # We can then close our access to the framebuffer
+    f.close()
+    time.sleep(0.1)
 
 ##
 # Everything that follows is for handling the touchscreen touch events via evdev
@@ -246,6 +246,7 @@ while True:
                             text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
                             text_rect = text.get_rect(center=btn['rect'].center)
                             lcd.blit(text, text_rect)
+                        refresh()
                         time.sleep(0.3)
                         drawButtons()
                         refresh()
