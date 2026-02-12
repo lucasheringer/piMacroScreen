@@ -8,7 +8,7 @@
 ##
 
 import pygame, time, evdev, select, math, subprocess
-import os, sys
+import sys
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
 import cairosvg
@@ -28,28 +28,7 @@ pygame.init()
 
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
-lcd = pygame.Surface(surfaceSize, depth=16)
-fb = open("/dev/fb0", "wb", buffering=0)
-#lcd = pygame.Surface(surfaceSize)
-# At the top of your code, after creating lcd
-
-# def refresh():
-#     fb.seek(0)
-#     fb.write(lcd.get_buffer().raw)
-
-try:
-    # Load the background image
-    bg_image = pygame.image.load("bg.png")
-    print(f"Background image loaded successfully (dimensions: {bg_image.get_size()})")
-    
-    # Convert it to match the LCD surface format
-    if bg_image.get_size() != surfaceSize:
-        bg_image = pygame.transform.scale(bg_image, surfaceSize)
-        print(f"IN IF - Background image loaded successfully (dimensions: {bg_image.get_size()})")
-    bg_image = bg_image.convert()
-except pygame.error as e:
-    print(f"Failed to load background image: {e}")
-    bg_image = None
+lcd = pygame.Surface(surfaceSize)
 
 # This is the important bit
 def refresh():
@@ -62,6 +41,22 @@ def refresh():
     # We can then close our access to the framebuffer
     f.close()
     time.sleep(0.1)
+
+# Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
+# we can use the usual pygame primitives to draw on our surface before calling the refresh function.
+
+# Here we just blink the screen background in a few colors with the "Hello World!" text
+pygame.font.init()
+pygame.mouse.set_visible(False)
+defaultFont = pygame.font.SysFont(None,30)
+
+lcd.fill((128, 128, 128))
+#load image
+# bg = pygame.image.load("bg.png").convert()
+# lcd.blit(bg, (0, 0))
+lcd.blit(defaultFont.render("Hello World!", False, (0, 0, 0)),(0, 0))
+
+refresh()
 
 ##
 # Everything that follows is for handling the touchscreen touch events via evdev
@@ -180,8 +175,7 @@ for row in range(BUTTON_ROWS):
 
 # Function to draw all buttons
 def drawButtons():
-    if bg_image is not None:
-        lcd.blit(bg_image, (0, 0))
+    lcd.fill((255, 255, 255))  # Background
     for btn in buttons:
         pygame.draw.rect(lcd, btn['color'], btn['rect'], 3)  # Draw border
         # Draw icon or button number in center
