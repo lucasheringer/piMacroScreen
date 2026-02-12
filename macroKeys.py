@@ -29,7 +29,7 @@ pygame.init()
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
 lcd = pygame.display.set_mode((320, 240))
-lcd = pygame.Surface(surfaceSize)
+#lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
 
 try:
@@ -65,8 +65,6 @@ def refresh():
 pygame.font.init()
 pygame.mouse.set_visible(False)
 defaultFont = pygame.font.SysFont(None,30)
-
-lcd.fill((128, 128, 128))
 
 refresh()
 
