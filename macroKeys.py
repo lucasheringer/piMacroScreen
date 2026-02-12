@@ -29,6 +29,7 @@ pygame.init()
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
 lcd = pygame.display.set_mode((320, 240))
+lcd = pygame.display.set_mode(surfaceSize, 0, 16)
 #lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
 
@@ -47,16 +48,22 @@ except pygame.error as e:
     bg_image = None
 
 # This is the important bit
+# def refresh():
+#     # We open the TFT screen's framebuffer as a binary file. Note that we will write bytes into it, hence the "wb" operator
+#     f = open("/dev/fb0","wb")
+#     # According to the TFT screen specs, it supports only 16bits pixels depth
+#     # Pygame surfaces use 24bits pixels depth by default, but the surface itself provides a very handy method to convert it.
+#     # once converted, we write the full byte buffer of the pygame surface into the TFT screen framebuffer like we would in a plain file:
+#     f.write(lcd.get_buffer())
+#     # We can then close our access to the framebuffer
+#     f.close()
+#     time.sleep(0.1)
+
 def refresh():
-    # We open the TFT screen's framebuffer as a binary file. Note that we will write bytes into it, hence the "wb" operator
-    f = open("/dev/fb0","wb")
-    # According to the TFT screen specs, it supports only 16bits pixels depth
-    # Pygame surfaces use 24bits pixels depth by default, but the surface itself provides a very handy method to convert it.
-    # once converted, we write the full byte buffer of the pygame surface into the TFT screen framebuffer like we would in a plain file:
-    f.write(lcd.get_buffer())
-    # We can then close our access to the framebuffer
-    f.close()
-    time.sleep(0.1)
+    with open("/dev/fb0", "wb") as f:
+        buf = pygame.image.tostring(lcd, "RGB565")
+        f.write(buf)
+    time.sleep(0.01)
 
 # Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
 # we can use the usual pygame primitives to draw on our surface before calling the refresh function.
@@ -180,7 +187,6 @@ for row in range(BUTTON_ROWS):
 
 # Function to draw all buttons
 def drawButtons():
-    # lcd.fill((255, 255, 255))  # Background
     if bg_image is not None:
         lcd.blit(bg_image, (0, 0))
     for btn in buttons:
