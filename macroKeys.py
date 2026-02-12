@@ -26,7 +26,7 @@ surfaceSize = (320, 240)
 # Note that we don't instantiate any display!
 pygame.init()
 #load image
-bg = pygame.image.load("bg.png").convert()
+bg = pygame.image.load("bg.png")
 
 
 # The pygame surface we are going to draw onto. 
