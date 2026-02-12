@@ -28,7 +28,7 @@ pygame.init()
 
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
-lcd = pygame.display.set_mode(surfaceSize, 0, 16)
+lcd = pygame.Surface(surfaceSize, depth=16)
 fb = open("/dev/fb0", "wb", buffering=0)
 #lcd = pygame.Surface(surfaceSize)
 # At the top of your code, after creating lcd
