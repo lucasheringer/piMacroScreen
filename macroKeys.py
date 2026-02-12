@@ -38,7 +38,7 @@ def refresh():
 
 lcd.fill((255,0,0))
 refresh()
-time.sleep(2)
+time.sleep(10)
 
 try:
     # Load the background image
