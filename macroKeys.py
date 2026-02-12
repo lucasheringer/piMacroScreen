@@ -63,13 +63,6 @@ except pygame.error as e:
 #     f.close()
 #     time.sleep(0.1)
 
-
-
-# Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
-# we can use the usual pygame primitives to draw on our surface before calling the refresh function.
-
-refresh()
-
 ##
 # Everything that follows is for handling the touchscreen touch events via evdev
 ##
