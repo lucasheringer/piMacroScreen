@@ -5,8 +5,10 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/pi/piMacroScreen
-ExecStart=/usr/bin/python3 /home/pi/piMacroScreen/macroKeys.py
+WorkingDirectory=/home/lheringer/piMacroScreen
+ExecStart=/home/lheringer/piMacroScreen/start_services.sh start
+ExecStop=/home/lheringer/piMacroScreen/start_services.sh stop
+ExecReload=/home/lheringer/piMacroScreen/start_services.sh reload
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
