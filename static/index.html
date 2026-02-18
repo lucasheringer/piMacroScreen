@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macro Keyboard Configuration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎹 Macro Keyboard Configuration</h1>
+            <div class="header-buttons">
+                <button id="saveBtn" class="btn btn-primary">💾 Save Configuration</button>
+                <button id="restartBtn" class="btn btn-secondary">🔄 Restart Service</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Background Configuration Section -->
+            <section class="config-section">
+                <h2>🖼️ Background Image</h2>
+                <div class="background-config">
+                    <div class="current-background">
+                        <label>Current Background:</label>
+                        <span id="currentBg">bg.png</span>
+                    </div>
+                    <div class="upload-area">
+                        <input type="file" id="bgFileInput" accept="image/*" />
+                        <button id="uploadBgBtn" class="btn btn-small">Upload New Background</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Button Configuration Section -->
+            <section class="config-section">
+                <h2>🔘 Button Configuration</h2>
+                <div class="buttons-grid" id="buttonsGrid">
+                    <!-- Buttons will be dynamically generated here -->
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Button Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Button <span id="modalButtonId"></span></h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="buttonEditForm">
+                    <div class="form-group">
+                        <label for="buttonIcon">Icon Path:</label>
+                        <div class="icon-selector">
+                            <input type="text" id="buttonIcon" class="form-control" placeholder="/path/to/icon.svg">
+                            <button type="button" id="browseIconBtn" class="btn btn-small">📁 Browse Icons</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buttonColor">Border Color:</label>
+                        <div class="color-picker">
+                            <input type="color" id="buttonColorPicker" value="#646464">
+                            <input type="text" id="buttonColor" class="form-control" placeholder="100, 100, 100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buttonPressedColor">Pressed Color:</label>
+                        <div class="color-picker">
+                            <input type="color" id="buttonPressedColorPicker" value="#ff0000">
+                            <input type="text" id="buttonPressedColor" class="form-control" placeholder="255, 0, 0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="actionType">Action Type:</label>
+                        <select id="actionType" class="form-control">
+                            <option value="media">Media Key</option>
+                            <option value="hid">HID Report</option>
+                            <option value="shell">Shell Command</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="mediaKeyGroup">
+                        <label for="actionValue">Media Key:</label>
+                        <select id="mediaKeySelect" class="form-control">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="form-group hidden" id="hidReportGroup">
+                        <label for="hidReport">HID Report (hex with colons):</label>
+                        <input type="text" id="hidReport" class="form-control" placeholder="01:0D:00:10:00:00:00:00:00">
+                        <small>Example: 01:0D:00:10:00:00:00:00:00</small>
+                    </div>
+
+                    <div class="form-group hidden" id="shellCommandGroup">
+                        <label for="shellCommand">Shell Command:</label>
+                        <input type="text" id="shellCommand" class="form-control" placeholder="echo 'Hello World'">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">✓ Update Button</button>
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Icon Browser Modal -->
+    <div id="iconBrowserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📁 Browse System Icons</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="icon-search">
+                    <input type="text" id="iconSearchInput" class="form-control" placeholder="Search icons...">
+                </div>
+                <div class="icon-grid" id="iconGrid">
+                    <!-- Icons will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

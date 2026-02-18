@@ -9,6 +9,7 @@
 
 import pygame, time, evdev, select, math, subprocess, random
 import sys
+import json
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
 import cairosvg
@@ -17,6 +18,23 @@ import os
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
+
+# Load configuration from JSON file
+def load_config(config_file='config.json'):
+    """Load configuration from JSON file"""
+    try:
+        with open(config_file, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading config: {e}")
+        # Return default configuration
+        return {
+            'background': 'bg.png',
+            'buttons': []
+        }
+
+# Load the configuration
+CONFIG = load_config()
 
 def detect_framebuffer_device(width=320, height=240):
     """
@@ -69,8 +87,8 @@ subprocess.call("setterm -cursor off", shell=True)
 
 # Note that we don't instantiate any display!
 pygame.init()
-#load image
-bg = pygame.image.load("bg.png")
+#load image - from configuration
+bg = pygame.image.load(CONFIG.get('background', 'bg.png'))
 
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
@@ -161,58 +179,30 @@ BUTTON_ROWS = 2
 BUTTON_WIDTH = surfaceSize[0] // BUTTON_COLS  # 106 pixels
 BUTTON_HEIGHT = surfaceSize[1] // BUTTON_ROWS  # 120 pixels
 
-# Load SVG icon for button 1 (row 1, col 1)
-pause_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/actions/media-playback-pause-symbolic.svg', size=50)
-
-# Load SVG icon for button 3 (row 1, col 2)
-vol_up_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/audio-volume-high-symbolic-rtl.svg', size=50)
-
-# Load SVG icon for button 3 (row 2, col 2)
-vol_down_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/audio-volume-low-symbolic-rtl.svg', size=50)
-
-# Load SVG icon for button 6 (row 2, col 3)
-mic_muted_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/microphone-sensitivity-muted-symbolic.svg', size=50)
-
-# # Load SVG icon for button 3 (row 2, col 3)
-# sys_lock_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/status/system-lock-screen-symbolic.svg', size=50)
-
-# Load SVG icon for button 3 (row 1, col 3)
-act_unav_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/actions/action-unavailable-symbolic.svg', size=50)
-
-# Load SVG icon for button 3 (row 1, col 3)
-media_tape_icon = load_svg_icon('/usr/share/icons/Adwaita/symbolic/devices/media-tape-symbolic.svg', size=50)
-
-# Create button rectangles
+# Create buttons from configuration
 buttons = []
-button_id = 1
-for row in range(BUTTON_ROWS):
-    for col in range(BUTTON_COLS):
-        x = col * BUTTON_WIDTH
-        y = row * BUTTON_HEIGHT
-        # Assign icons to specific buttons
-        icon = None
-        if button_id == 1:
-            icon = pause_icon
-        elif button_id == 2:
-            icon = vol_up_icon
-        elif button_id == 3:
-            icon = act_unav_icon
-        elif button_id == 4:
-            icon = media_tape_icon
-        elif button_id == 5:
-            icon = vol_down_icon
-        elif button_id == 6:
-            icon = mic_muted_icon
-        
-        btn_data = {
-            'id': button_id,
-            'rect': pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT),
-            'color': (100, 100, 100),
-            'pressed_color': (255, 0, 0),
-            'icon': icon
-        }
-        buttons.append(btn_data)
-        button_id += 1
+for button_config in CONFIG.get('buttons', []):
+    button_id = button_config['id']
+    row = (button_id - 1) // BUTTON_COLS
+    col = (button_id - 1) % BUTTON_COLS
+    x = col * BUTTON_WIDTH
+    y = row * BUTTON_HEIGHT
+    
+    # Load icon if specified
+    icon = None
+    if 'icon' in button_config and button_config['icon']:
+        icon = load_svg_icon(button_config['icon'], size=50)
+    
+    btn_data = {
+        'id': button_id,
+        'rect': pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT),
+        'color': tuple(button_config.get('color', [100, 100, 100])),
+        'pressed_color': tuple(button_config.get('pressed_color', [255, 0, 0])),
+        'icon': icon,
+        'action_type': button_config.get('action_type', 'media'),
+        'action_value': button_config.get('action_value', '')
+    }
+    buttons.append(btn_data)
 
 # Function to draw all buttons
 def drawButtons():
@@ -309,20 +299,28 @@ while True:
                     for btn in buttons:
                         if btn['rect'].collidepoint(p):
                             print("==> BUTTON {0} PRESSED! <==".format(btn['id']))
-                            if btn['id'] == 1:
-                                send('PAUSE_UNPAUSE', '/dev/hidg0')
-                            if btn['id'] == 2:
-                                send('VOLUME_UP', '/dev/hidg0')
-                            if btn['id'] == 3:
-                                write_report(chr(1) + chr(0x0D) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
+                            
+                            # Execute action based on configuration
+                            action_type = btn.get('action_type', 'media')
+                            action_value = btn.get('action_value', '')
+                            
+                            if action_type == 'media':
+                                # Send media key command
+                                send(action_value, '/dev/hidg0')
+                            elif action_type == 'hid':
+                                # Send raw HID report
+                                # Convert hex string format "01:0D:00:10:..." to bytes
+                                hex_values = action_value.split(':')
+                                report = ''.join([chr(int(h, 16)) for h in hex_values])
+                                write_report(report)
+                                # Send null report to release
                                 write_report(chr(1) + NULL_CHAR*8)
-                            if btn['id'] == 4:
-                                send('PLAY', '/dev/hidg0')
-                            if btn['id'] == 5:
-                                send('VOLUME_DOWN', '/dev/hidg0')
-                            if btn['id'] == 6:
-                                write_report(chr(1) + chr(0x0A) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
-                                write_report(chr(1) + NULL_CHAR*8)
+                            elif action_type == 'shell':
+                                # Execute shell command
+                                try:
+                                    subprocess.call(action_value, shell=True)
+                                except Exception as e:
+                                    print(f"Error executing shell command: {e}")
 
                             drawButtons()
                             pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)

@@ -1,0 +1,53 @@
+{
+  "background": "bg.png",
+  "buttons": [
+    {
+      "id": 1,
+      "icon": "/usr/share/icons/Adwaita/symbolic/actions/media-playback-pause-symbolic.svg",
+      "color": [100, 100, 100],
+      "pressed_color": [255, 0, 0],
+      "action_type": "media",
+      "action_value": "PAUSE_UNPAUSE"
+    },
+    {
+      "id": 2,
+      "icon": "/usr/share/icons/Adwaita/symbolic/status/audio-volume-high-symbolic-rtl.svg",
+      "color": [100, 100, 100],
+      "pressed_color": [255, 0, 0],
+      "action_type": "media",
+      "action_value": "VOLUME_UP"
+    },
+    {
+      "id": 3,
+      "icon": "/usr/share/icons/Adwaita/symbolic/actions/action-unavailable-symbolic.svg",
+      "color": [100, 100, 100],
+      "pressed_color": [255, 0, 0],
+      "action_type": "hid",
+      "action_value": "01:0D:00:10:00:00:00:00:00"
+    },
+    {
+      "id": 4,
+      "icon": "/usr/share/icons/Adwaita/symbolic/devices/media-tape-symbolic.svg",
+      "color": [100, 100, 100],
+      "pressed_color": [255, 0, 0],
+      "action_type": "media",
+      "action_value": "PLAY"
+    },
+    {
+      "id": 5,
+      "icon": "/usr/share/icons/Adwaita/symbolic/status/audio-volume-low-symbolic-rtl.svg",
+      "color": [100, 100, 100],
+      "pressed_color": [255, 0, 0],
+      "action_type": "media",
+      "action_value": "VOLUME_DOWN"
+    },
+    {
+      "id": 6,
+      "icon": "/usr/share/icons/Adwaita/symbolic/status/microphone-sensitivity-muted-symbolic.svg",
+      "color": [100, 100, 100],
+      "pressed_color": [255, 0, 0],
+      "action_type": "hid",
+      "action_value": "01:0A:00:10:00:00:00:00:00"
+    }
+  ]
+}
