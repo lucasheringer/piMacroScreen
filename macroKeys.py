@@ -12,9 +12,50 @@ import sys
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
 import cairosvg
+import glob
+import os
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
+
+def detect_framebuffer_device(width=320, height=240):
+    """
+    Auto-detect the correct framebuffer device (/dev/fb0, /dev/fb1, etc.)
+    by checking resolution or trying to open each device.
+    """
+    # First, try to find by checking /sys/class/graphics for matching resolution
+    fb_devices = sorted(glob.glob('/sys/class/graphics/fb*'))
+    
+    for fb_path in fb_devices:
+        try:
+            mode_path = os.path.join(fb_path, 'modes')
+            if os.path.exists(mode_path):
+                with open(mode_path, 'r') as f:
+                    modes = f.read()
+                    if f"{width}x{height}" in modes:
+                        fb_num = os.path.basename(fb_path)
+                        device = f"/dev/{fb_num}"
+                        print(f"Found framebuffer device: {device}")
+                        return device
+        except Exception as e:
+            pass
+    
+    # Fallback: try to open each device
+    for i in range(5):
+        fb_device = f"/dev/fb{i}"
+        try:
+            with open(fb_device, 'rb+') as f:
+                print(f"Detected framebuffer device: {fb_device}")
+                return fb_device
+        except Exception:
+            pass
+    
+    # Default fallback
+    print("Warning: Could not auto-detect framebuffer device, using /dev/fb0")
+    return "/dev/fb0"
+
+# Auto-detect framebuffer device
+FB_DEVICE = detect_framebuffer_device(320, 240)
 
 def write_report(report):
     with open('/dev/hidg0', 'rb+') as fd:
@@ -39,7 +80,7 @@ lcd.blit(bg, (0, 0))
 # This is the important bit
 def refresh():
     # We open the TFT screen's framebuffer as a binary file. Note that we will write bytes into it, hence the "wb" operator
-    f = open("/dev/fb0","wb")
+    f = open(FB_DEVICE,"wb")
     # According to the TFT screen specs, it supports only 16bits pixels depth
     # Pygame surfaces use 24bits pixels depth by default, but the surface itself provides a very handy method to convert it.
     # once converted, we write the full byte buffer of the pygame surface into the TFT screen framebuffer like we would in a plain file:
