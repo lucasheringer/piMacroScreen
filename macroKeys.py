@@ -23,6 +23,9 @@ def write_report(report):
 # Very important: the exact pixel size of the TFT screen must be known so we can build graphics at this exact format
 surfaceSize = (320, 240)
 
+# Hide TTY cursor on Raspberry Pi
+subprocess.call("setterm -cursor off", shell=True)
+
 # Note that we don't instantiate any display!
 pygame.init()
 #load image
