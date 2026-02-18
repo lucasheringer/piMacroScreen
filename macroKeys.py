@@ -28,7 +28,6 @@ pygame.init()
 #load image
 bg = pygame.image.load("bg.png")
 
-
 # The pygame surface we are going to draw onto. 
 # /!\ It must be the exact same size of the target display /!\
 lcd = pygame.Surface(surfaceSize)
@@ -190,58 +189,114 @@ drawButtons()
 refresh()
 
 # Main event loop
+
+# Screensaver / inactivity configuration
+SCREENSAVER_DELAY = 300  # seconds (5 minutes)
+SCREENSAVER_FRAME_DELAY = 0.05  # seconds between animation frames
+
+last_activity = time.time()
+screensaver_active = False
+
+# Simple screensaver: bouncing ball
+def run_screensaver():
+    global screensaver_active, last_activity
+    screensaver_active = True
+    x = surfaceSize[0] // 2
+    y = surfaceSize[1] // 2
+    vx = 2
+    vy = 1
+    radius = 12
+    color_hue = 0
+
+    import colorsys
+
+    while True:
+        # Poll for touch; exit screensaver on any touch press
+        r, w, xsel = select.select([touch], [], [], SCREENSAVER_FRAME_DELAY)
+        if r:
+            for event in touch.read():
+                last_activity = time.time()
+                if event.type == evdev.ecodes.EV_KEY and event.code == 330 and event.value == 1:
+                    screensaver_active = False
+                    drawButtons()
+                    refresh()
+                    return
+
+        # Update animation
+        x += vx
+        y += vy
+        if x - radius < 0 or x + radius > surfaceSize[0]:
+            vx = -vx
+            x += vx
+        if y - radius < 0 or y + radius > surfaceSize[1]:
+            vy = -vy
+            y += vy
+
+        color_hue = (color_hue + 3) % 360
+        rgb = colorsys.hsv_to_rgb(color_hue / 360.0, 0.8, 0.9)
+        color = tuple(int(c * 255) for c in rgb)
+
+        lcd.fill((0, 0, 0))
+        pygame.draw.circle(lcd, color, (int(x), int(y)), radius)
+        pygame.draw.circle(lcd, (255,255,255), (int(x), int(y)), 3)
+        refresh()
+
+# Non-blocking main loop with inactivity check
 while True:
-    # TODO get the right ecodes instead of int
-    r,w,x = select.select([touch], [], [])
-    for event in touch.read():
-        if event.type == evdev.ecodes.EV_ABS:
-            if event.code == 1:
-                X = event.value
-            elif event.code == 0:
-                Y = event.value
-        elif event.type == evdev.ecodes.EV_KEY:
-            if event.code == 330 and event.value == 1:  # Touch press
-                p = getPixelsFromCoordinates((X, Y))
-                print("Touch detected at Pixels: {0}:{1}".format(p[0], p[1]))
-                
-                # Check which button was touched
-                for btn in buttons:
-                    if btn['rect'].collidepoint(p):
-                        print("==> BUTTON {0} PRESSED! <==".format(btn['id']))
-                        # Highlight the pressed button
-                        if btn['id'] == 1:
-                            send('PAUSE_UNPAUSE', '/dev/hidg0')
-                        if btn['id'] == 2:
-                            send('VOLUME_UP', '/dev/hidg0')
-                        if btn['id'] == 3:
-                            # Send Report ID 1 + modifiers (Ctrl+Option+Cmd) + 'm'
-                            # Modifiers: Left Ctrl=0x01, Left Alt(Option)=0x04, Left GUI(Cmd)=0x08 -> 0x0D
-                            write_report(chr(1) + chr(0x0D) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
-                            # Release keys (Report ID + 8 zero bytes)
-                            write_report(chr(1) + NULL_CHAR*8)
-                        if btn['id'] == 4:
-                            send('PLAY', '/dev/hidg0')
-                        if btn['id'] == 5:
-                            send('VOLUME_DOWN', '/dev/hidg0')
-                        if btn['id'] == 6:
-                            # Send Report ID 1 + modifiers (Cmd+Shift) + 'm'
-                            write_report(chr(1) + chr(0x0A) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
-                            # Release keys (Report ID + 8 zero bytes)
-                            write_report(chr(1) + NULL_CHAR*8)
-                        drawButtons()
-                        pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
-                        # Draw icon or button number on pressed state
-                        if btn['icon'] is not None:
-                            icon_rect = btn['icon'].get_rect(center=btn['rect'].center)
-                            lcd.blit(btn['icon'], icon_rect)
-                        else:
-                            text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
-                            text_rect = text.get_rect(center=btn['rect'].center)
-                            lcd.blit(text, text_rect)
-                        refresh()
-                        time.sleep(0.3)
-                        drawButtons()
-                        refresh()
-                        break
+    # Small timeout so we can detect inactivity
+    r, w, xsel = select.select([touch], [], [], 0.1)
+    if r:
+        for event in touch.read():
+            last_activity = time.time()
+            if event.type == evdev.ecodes.EV_ABS:
+                if event.code == 1:
+                    X = event.value
+                elif event.code == 0:
+                    Y = event.value
+            elif event.type == evdev.ecodes.EV_KEY:
+                if event.code == 330 and event.value == 1:  # Touch press
+                    try:
+                        p = getPixelsFromCoordinates((X, Y))
+                    except Exception:
+                        continue
+                    print("Touch detected at Pixels: {0}:{1}".format(p[0], p[1]))
+
+                    # Check which button was touched
+                    for btn in buttons:
+                        if btn['rect'].collidepoint(p):
+                            print("==> BUTTON {0} PRESSED! <==".format(btn['id']))
+                            if btn['id'] == 1:
+                                send('PAUSE_UNPAUSE', '/dev/hidg0')
+                            if btn['id'] == 2:
+                                send('VOLUME_UP', '/dev/hidg0')
+                            if btn['id'] == 3:
+                                write_report(chr(1) + chr(0x0D) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
+                                write_report(chr(1) + NULL_CHAR*8)
+                            if btn['id'] == 4:
+                                send('PLAY', '/dev/hidg0')
+                            if btn['id'] == 5:
+                                send('VOLUME_DOWN', '/dev/hidg0')
+                            if btn['id'] == 6:
+                                write_report(chr(1) + chr(0x0A) + NULL_CHAR + chr(0x10) + NULL_CHAR*5)
+                                write_report(chr(1) + NULL_CHAR*8)
+
+                            drawButtons()
+                            pygame.draw.rect(lcd, btn['pressed_color'], btn['rect'], 3)
+                            if btn['icon'] is not None:
+                                icon_rect = btn['icon'].get_rect(center=btn['rect'].center)
+                                lcd.blit(btn['icon'], icon_rect)
+                            else:
+                                text = defaultFont.render(str(btn['id']), False, (255, 255, 255))
+                                text_rect = text.get_rect(center=btn['rect'].center)
+                                lcd.blit(text, text_rect)
+                            refresh()
+                            time.sleep(0.3)
+                            drawButtons()
+                            refresh()
+                            break
+
+    # Start screensaver if idle
+    if not screensaver_active and (time.time() - last_activity) > SCREENSAVER_DELAY:
+        run_screensaver()
 
 exit()
