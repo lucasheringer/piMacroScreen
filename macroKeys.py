@@ -7,7 +7,7 @@
 # - a device to get input from it, e.g. /dev/input/touchscreen
 ##
 
-import pygame, time, evdev, select, math, subprocess
+import pygame, time, evdev, select, math, subprocess, random
 import sys
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
@@ -247,9 +247,9 @@ def run_screensaver():
     screensaver_active = True
     x = surfaceSize[0] // 2
     y = surfaceSize[1] // 2
-    vx = 2
-    vy = 1
-    radius = 12
+    vx = 3
+    vy = 2
+    radius = random.randint(8, 20)
     color_hue = 0
 
     import colorsys
