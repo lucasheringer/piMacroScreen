@@ -17,70 +17,70 @@ subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
 
-# # Rotary Encoder Pins - using BCM numbering
-# RoAPin = 20    # CLK Pin
-# RoBPin = 21    # DT Pin
-# BtnPin = 16    # Button Pin
+# Rotary Encoder Pins - using BCM numbering
+RoAPin = 20    # CLK Pin
+RoBPin = 21    # DT Pin
+BtnPin = 16    # Button Pin
 
-# globalCounter = 0
+globalCounter = 0
 
-# flag = 0
-# Last_RoB_Status = 0
-# Current_RoB_Status = 0
+flag = 0
+Last_RoB_Status = 0
+Current_RoB_Status = 0
 
-# def setup():
-# 	GPIO.setmode(GPIO.BCM)         # Numbers GPIOs by Broadcom SOC channel
-# 	GPIO.setup(RoAPin, GPIO.IN)    # input mode
-# 	GPIO.setup(RoBPin, GPIO.IN)
-# 	GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+def setup():
+	GPIO.setmode(GPIO.BCM)         # Numbers GPIOs by Broadcom SOC channel
+	GPIO.setup(RoAPin, GPIO.IN)    # input mode
+	GPIO.setup(RoBPin, GPIO.IN)
+	GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-# def rotaryDeal():
-# 	global flag
-# 	global Last_RoB_Status
-# 	global Current_RoB_Status
-# 	global globalCounter
-# 	Last_RoB_Status = GPIO.input(RoBPin)
-# 	while not GPIO.input(RoAPin):
-# 		Current_RoB_Status = GPIO.input(RoBPin)
-# 		flag = 1
-# 	if flag == 1:
-# 		flag = 0
-# 		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
-# 			send("VOLUME_UP", '/dev/hidg0')
-# 		if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
-# 			send("VOLUME_DOWN", '/dev/hidg0')
+def rotaryDeal():
+	global flag
+	global Last_RoB_Status
+	global Current_RoB_Status
+	global globalCounter
+	Last_RoB_Status = GPIO.input(RoBPin)
+	while not GPIO.input(RoAPin):
+		Current_RoB_Status = GPIO.input(RoBPin)
+		flag = 1
+	if flag == 1:
+		flag = 0
+		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
+			send("VOLUME_UP", '/dev/hidg0')
+		if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
+			send("VOLUME_DOWN", '/dev/hidg0')
 
-# def btnISR(channel):
-# 	global globalCounter
-# 	globalCounter = 0
+def btnISR(channel):
+	global globalCounter
+	globalCounter = 0
 
-# def loop():
-# 	global globalCounter
-# 	tmp = 0	# Rotary Temperary
+def loop():
+	global globalCounter
+	tmp = 0	# Rotary Temperary
 
-# 	button_interrupt_enabled = False
-# 	try:
-# 		GPIO.remove_event_detect(BtnPin)
-# 	except RuntimeError:
-# 		pass
+	button_interrupt_enabled = False
+	try:
+		GPIO.remove_event_detect(BtnPin)
+	except RuntimeError:
+		pass
 
-# 	try:
-# 		GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
-# 		button_interrupt_enabled = True
-# 	except RuntimeError as e:
-# 		print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
+	try:
+		GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
+		button_interrupt_enabled = True
+	except RuntimeError as e:
+		print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
 
-# 	while True:
-# 		rotaryDeal()
-# 		if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
-# 			btnISR(BtnPin)
-# 			time.sleep(0.2)
-# 		if tmp != globalCounter:
-# 			print(f'globalCounter = {globalCounter}')
-# 			tmp = globalCounter
+	while True:
+		rotaryDeal()
+		if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
+			btnISR(BtnPin)
+			time.sleep(0.2)
+		if tmp != globalCounter:
+			print(f'globalCounter = {globalCounter}')
+			tmp = globalCounter
 
-# def destroy():
-# 	GPIO.cleanup()             # Release resource
+def destroy():
+	GPIO.cleanup()             # Release resource
 
 # Load configuration from JSON file
 def load_config(config_file='config.json'):
