@@ -21,8 +21,8 @@ time.sleep(2)
 NULL_CHAR = chr(0)
 
 # Starting pins for rotary encoders, will be used for volume control and such
-clk = 20
-dt = 21
+clk = 21
+dt = 20
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(clk, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -116,7 +116,7 @@ def refresh():
     f.write(lcd.get_buffer())
     # We can then close our access to the framebuffer
     f.close()
-    time.sleep(0.01)
+    # time.sleep(0.01)
 
 # Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
 # we can use the usual pygame primitives to draw on our surface before calling the refresh function.
