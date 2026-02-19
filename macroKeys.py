@@ -7,27 +7,80 @@
 # - a device to get input from it, e.g. /dev/input/touchscreen
 ##
 
-import pygame, time, evdev, select, math, subprocess, random
-from RPi import GPIO
-import sys
+import pygame, time, evdev, select, math, subprocess, random, cairosvg, glob, os
+import RPi.GPIO as GPIO
 import json
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
-import cairosvg
-import glob
-import os
+
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
 
-# Starting pins for rotary encoders, will be used for volume control and such
-clk = 21
-dt = 20
+# Rotary Encoder Pins - using BCM numbering
+RoAPin = 21    # CLK Pin
+RoBPin = 20    # DT Pin
+BtnPin = 16    # Button Pin
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(clk, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(dt, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-clkLastState = GPIO.input(clk)
+globalCounter = 0
+
+flag = 0
+Last_RoB_Status = 0
+Current_RoB_Status = 0
+
+def setup():
+	GPIO.setmode(GPIO.BCM)         # Numbers GPIOs by Broadcom SOC channel
+	GPIO.setup(RoAPin, GPIO.IN)    # input mode
+	GPIO.setup(RoBPin, GPIO.IN)
+	GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+def rotaryDeal():
+	global flag
+	global Last_RoB_Status
+	global Current_RoB_Status
+	global globalCounter
+	Last_RoB_Status = GPIO.input(RoBPin)
+	while not GPIO.input(RoAPin):
+		Current_RoB_Status = GPIO.input(RoBPin)
+		flag = 1
+	if flag == 1:
+		flag = 0
+		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
+			send("VOLUME_UP", '/dev/hidg0')
+		if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
+			send("VOLUME_DOWN", '/dev/hidg0')
+
+def btnISR(channel):
+	global globalCounter
+	globalCounter = 0
+
+def loop():
+	global globalCounter
+	tmp = 0	# Rotary Temperary
+
+	button_interrupt_enabled = False
+	try:
+		GPIO.remove_event_detect(BtnPin)
+	except RuntimeError:
+		pass
+
+	try:
+		GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
+		button_interrupt_enabled = True
+	except RuntimeError as e:
+		print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
+
+	while True:
+		rotaryDeal()
+		if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
+			btnISR(BtnPin)
+			time.sleep(0.2)
+		if tmp != globalCounter:
+			print(f'globalCounter = {globalCounter}')
+			tmp = globalCounter
+
+def destroy():
+	GPIO.cleanup()             # Release resource
 
 # Load configuration from JSON file
 def load_config(config_file='config.json'):
@@ -287,16 +340,25 @@ def run_screensaver():
 
 # Non-blocking main loop with inactivity check
 while True:
-    clkState = GPIO.input(clk)
-    dtState = GPIO.input(dt)
-    if clkState != clkLastState:
-            # Increase Volume
-            if dtState != clkState:
-                send("VOLUME_UP", '/dev/hidg0')
-            # Decrease Volume
-            else:
-                send("VOLUME_DOWN", '/dev/hidg0')
-    clkLastState = clkState
+    button_interrupt_enabled = False
+    try:
+        GPIO.remove_event_detect(BtnPin)
+    except RuntimeError:
+        pass
+
+    try:
+        GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
+        button_interrupt_enabled = True
+    except RuntimeError as e:
+        print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
+
+    rotaryDeal()
+    if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
+        send("MUTE", '/dev/hidg0')
+        time.sleep(0.01)
+    if tmp != globalCounter:
+        print(f'globalCounter = {globalCounter}')
+        tmp = globalCounter
     r, w, xsel = select.select([touch], [], [], 0.1)
     if r:
         for event in touch.read():
