@@ -360,7 +360,7 @@ while True:
     rotaryDeal()
     if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
         send("MUTE", '/dev/hidg0')
-        time.sleep(0.01)
+        time.sleep(0.1)
     if tmp != globalCounter:
         print(f'globalCounter = {globalCounter}')
         tmp = globalCounter
