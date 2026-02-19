@@ -116,7 +116,7 @@ def refresh():
     f.write(lcd.get_buffer())
     # We can then close our access to the framebuffer
     f.close()
-    time.sleep(0.1)
+    time.sleep(0.01)
 
 # Now we've got a function that can get the bytes from a pygame surface to the TFT framebuffer, 
 # we can use the usual pygame primitives to draw on our surface before calling the refresh function.
@@ -351,7 +351,6 @@ while True:
                                 text_rect = text.get_rect(center=btn['rect'].center)
                                 lcd.blit(text, text_rect)
                             refresh()
-                            time.sleep(0.1)
                             drawButtons()
                             refresh()
                             break
