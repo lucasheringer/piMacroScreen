@@ -18,8 +18,8 @@ time.sleep(2)
 NULL_CHAR = chr(0)
 
 # Rotary Encoder Pins - using BCM numbering
-RoAPin = 21    # CLK Pin
-RoBPin = 20    # DT Pin
+RoAPin = 20    # CLK Pin
+RoBPin = 21    # DT Pin
 BtnPin = 16    # Button Pin
 
 globalCounter = 0
