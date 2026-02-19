@@ -93,17 +93,39 @@ header h1 {
 /* Buttons Grid */
 .buttons-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 20px;
 }
 
 .button-card {
+    position: relative;
+    overflow: hidden;
     background: #f9f9f9;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     padding: 20px;
+    min-height: 190px;
     transition: all 0.3s ease;
     cursor: pointer;
+}
+
+.button-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--button-icon-url);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 65% 65%;
+    opacity: 0.14;
+    pointer-events: none;
+}
+
+.button-card-header,
+.button-card-content {
+    position: relative;
+    z-index: 1;
 }
 
 .button-card:hover {

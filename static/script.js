@@ -33,10 +33,29 @@ function updateUI() {
     const buttonsGrid = document.getElementById('buttonsGrid');
     buttonsGrid.innerHTML = '';
     
-    config.buttons.forEach(button => {
+    const sortedButtons = [...config.buttons].sort((a, b) => a.id - b.id);
+    sortedButtons.forEach(button => {
         const buttonCard = createButtonCard(button);
         buttonsGrid.appendChild(buttonCard);
     });
+}
+
+function resolveIconUrl(iconPath) {
+    if (!iconPath) return '';
+
+    if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
+        return iconPath;
+    }
+
+    if (iconPath.startsWith('/uploads/') || iconPath.startsWith('/static/')) {
+        return iconPath;
+    }
+
+    if (iconPath.startsWith('uploads/') || iconPath.startsWith('static/')) {
+        return `/${iconPath}`;
+    }
+
+    return `/api/icon_file?path=${encodeURIComponent(iconPath)}`;
 }
 
 // Create a button card element
@@ -47,6 +66,11 @@ function createButtonCard(button) {
     
     const colorRgb = `rgb(${button.color.join(', ')})`;
     const pressedColorRgb = `rgb(${button.pressed_color.join(', ')})`;
+    const iconUrl = resolveIconUrl(button.icon);
+
+    if (iconUrl) {
+        card.style.setProperty('--button-icon-url', `url("${iconUrl}")`);
+    }
     
     card.innerHTML = `
         <div class="button-card-header">

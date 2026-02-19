@@ -4,7 +4,7 @@ Web Server for Macro Keyboard Configuration
 Allows changing background, button configuration, and actions through a web interface
 """
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 import json
 import os
 import subprocess
@@ -131,6 +131,28 @@ def get_available_icons():
         })
     
     return jsonify(icon_list)
+
+@app.route('/api/icon_file', methods=['GET'])
+def serve_icon_file():
+    """Serve icon files for browser preview backgrounds"""
+    icon_path = request.args.get('path', '')
+    if not icon_path:
+        return jsonify({'success': False, 'message': 'Missing icon path'}), 400
+
+    real_icon_path = os.path.realpath(icon_path)
+    allowed_roots = [
+        os.path.realpath('/usr/share/icons'),
+        os.path.realpath(os.path.join(os.getcwd(), 'uploads')),
+        os.path.realpath(os.path.join(os.getcwd(), 'static')),
+    ]
+
+    if not any(os.path.commonpath([real_icon_path, root]) == root for root in allowed_roots):
+        return jsonify({'success': False, 'message': 'Icon path not allowed'}), 403
+
+    if not os.path.isfile(real_icon_path):
+        return jsonify({'success': False, 'message': 'Icon file not found'}), 404
+
+    return send_file(real_icon_path)
 
 @app.route('/api/media_keys', methods=['GET'])
 def get_media_keys():
