@@ -27,12 +27,32 @@ globalCounter = 0
 flag = 0
 Last_RoB_Status = 0
 Current_RoB_Status = 0
+last_clk_state = GPIO.HIGH
+last_rotary_event_time = 0.0
+ROTARY_DEBOUNCE_SEC = 0.003
 
 def setup():
-	GPIO.setmode(GPIO.BCM)         # Numbers GPIOs by Broadcom SOC channel
-	GPIO.setup(RoAPin, GPIO.IN)    # input mode
-	GPIO.setup(RoBPin, GPIO.IN)
-	GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setmode(GPIO.BCM)         # Numbers GPIOs by Broadcom SOC channel
+    GPIO.setup(RoAPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(RoBPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+def handle_rotary():
+    global last_clk_state, last_rotary_event_time
+
+    clk_state = GPIO.input(RoAPin)
+    dt_state = GPIO.input(RoBPin)
+    now = time.time()
+
+    if clk_state != last_clk_state and clk_state == GPIO.LOW:
+        if now - last_rotary_event_time >= ROTARY_DEBOUNCE_SEC:
+            if dt_state != clk_state:
+                send("VOLUME_UP", '/dev/hidg0')
+            else:
+                send("VOLUME_DOWN", '/dev/hidg0')
+            last_rotary_event_time = now
+
+    last_clk_state = clk_state
 
 def rotaryDeal():
 	global flag
@@ -340,6 +360,7 @@ def run_screensaver():
 
 # Non-blocking main loop with inactivity check
 setup()
+last_clk_state = GPIO.input(RoAPin)
 
 tmp = 0	# Rotary Temperary
 button_interrupt_enabled = False
@@ -356,21 +377,11 @@ except RuntimeError as e:
 
 while True:
     # First, handle rotary encoder input
-    # rotaryDeal()
-    Last_RoB_Status = GPIO.input(RoBPin)
-    if not GPIO.input(RoAPin):
-         Current_RoB_Status = GPIO.input(RoBPin)
-         flag = 1
-    if flag == 1:
-        flag = 0
-        if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
-            send("VOLUME_UP", '/dev/hidg0')
-        if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
-            send("VOLUME_DOWN", '/dev/hidg0')
+    handle_rotary()
 
     if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
         send("MUTE", '/dev/hidg0')
-        time.sleep(0.1)
+        time.sleep(0.01)
     if tmp != globalCounter:
         print(f'globalCounter = {globalCounter}')
         tmp = globalCounter
