@@ -342,6 +342,7 @@ def run_screensaver():
 while True:
     # First, handle rotary encoder input
     setup()
+    tmp = 0	# Rotary Temperary
     button_interrupt_enabled = False
     try:
         GPIO.remove_event_detect(BtnPin)
