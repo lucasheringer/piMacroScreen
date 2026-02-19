@@ -339,21 +339,23 @@ def run_screensaver():
         refresh()
 
 # Non-blocking main loop with inactivity check
+setup()
+
+tmp = 0	# Rotary Temperary
+button_interrupt_enabled = False
+try:
+    GPIO.remove_event_detect(BtnPin)
+except RuntimeError:
+    pass
+
+try:
+    GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
+    button_interrupt_enabled = True
+except RuntimeError as e:
+    print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
+
 while True:
     # First, handle rotary encoder input
-    setup()
-    tmp = 0	# Rotary Temperary
-    button_interrupt_enabled = False
-    try:
-        GPIO.remove_event_detect(BtnPin)
-    except RuntimeError:
-        pass
-
-    try:
-        GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
-        button_interrupt_enabled = True
-    except RuntimeError as e:
-        print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
 
     rotaryDeal()
     if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
@@ -362,7 +364,7 @@ while True:
     if tmp != globalCounter:
         print(f'globalCounter = {globalCounter}')
         tmp = globalCounter
-    r, w, xsel = select.select([touch], [], [], 0.1)
+    r, w, xsel = select.select([touch], [], [], 0.01)
     if r:
         for event in touch.read():
             last_activity = time.time()
