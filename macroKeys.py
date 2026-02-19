@@ -340,6 +340,8 @@ def run_screensaver():
 
 # Non-blocking main loop with inactivity check
 while True:
+    # First, handle rotary encoder input
+    setup()
     button_interrupt_enabled = False
     try:
         GPIO.remove_event_detect(BtnPin)
