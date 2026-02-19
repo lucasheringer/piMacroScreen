@@ -7,7 +7,8 @@
 # - a device to get input from it, e.g. /dev/input/touchscreen
 ##
 
-import pygame, time, evdev, select, math, subprocess, random, GPIO
+import pygame, time, evdev, select, math, subprocess, random
+from RPi import GPIO
 import sys
 import json
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
