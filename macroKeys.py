@@ -27,7 +27,6 @@ dt = 20
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(clk, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(dt, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-counter = 0
 clkLastState = GPIO.input(clk)
 
 # Load configuration from JSON file
@@ -291,11 +290,12 @@ while True:
     clkState = GPIO.input(clk)
     dtState = GPIO.input(dt)
     if clkState != clkLastState:
+            # Increase Volume
             if dtState != clkState:
-                    counter += 1
+                send("VOLUME_UP", '/dev/hidg0')
+            # Decrease Volume
             else:
-                    counter -= 1
-            print(counter)
+                send("VOLUME_DOWN", '/dev/hidg0')
     clkLastState = clkState
     r, w, xsel = select.select([touch], [], [], 0.1)
     if r:
