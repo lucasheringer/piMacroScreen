@@ -342,6 +342,9 @@ def run_screensaver():
 setup()
 
 tmp = 0	# Rotary Temperary
+last_clk_state = GPIO.input(RoAPin)
+last_rotary_event = 0.0
+ROTARY_EVENT_GAP = 0.03
 button_interrupt_enabled = False
 try:
     GPIO.remove_event_detect(BtnPin)
@@ -356,11 +359,23 @@ except RuntimeError as e:
 
 while True:
     # First, handle rotary encoder input
+    clk_state = GPIO.input(RoAPin)
+    dt_state = GPIO.input(RoBPin)
+    now = time.monotonic()
+    if clk_state != last_clk_state and clk_state == GPIO.HIGH:
+        if (now - last_rotary_event) >= ROTARY_EVENT_GAP:
+            if dt_state != clk_state:
+                send("VOLUME_UP", '/dev/hidg0')
+                globalCounter += 1
+            else:
+                send("VOLUME_DOWN", '/dev/hidg0')
+                globalCounter -= 1
+            last_rotary_event = now
+    last_clk_state = clk_state
 
-    rotaryDeal()
     if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
         send("MUTE", '/dev/hidg0')
-        time.sleep(0.1)
+        time.sleep(0.02)
     if tmp != globalCounter:
         print(f'globalCounter = {globalCounter}')
         tmp = globalCounter
