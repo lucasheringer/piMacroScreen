@@ -7,7 +7,7 @@
 # - a device to get input from it, e.g. /dev/input/touchscreen
 ##
 
-import pygame, time, evdev, select, math, subprocess, random
+import pygame, time, evdev, select, math, subprocess, random, GPIO
 import sys
 import json
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
@@ -18,6 +18,16 @@ import os
 #subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
+
+# Starting pins for rotary encoders, will be used for volume control and such
+clk = 20
+dt = 21
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(clk, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(dt, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+counter = 0
+clkLastState = GPIO.input(clk)
 
 # Load configuration from JSON file
 def load_config(config_file='config.json'):
@@ -277,7 +287,15 @@ def run_screensaver():
 
 # Non-blocking main loop with inactivity check
 while True:
-    # Small timeout so we can detect inactivity
+    clkState = GPIO.input(clk)
+    dtState = GPIO.input(dt)
+    if clkState != clkLastState:
+            if dtState != clkState:
+                    counter += 1
+            else:
+                    counter -= 1
+            print(counter)
+    clkLastState = clkState
     r, w, xsel = select.select([touch], [], [], 0.1)
     if r:
         for event in touch.read():
