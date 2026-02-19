@@ -339,41 +339,41 @@ def run_screensaver():
         refresh()
 
 # Non-blocking main loop with inactivity check
-# setup()
+setup()
 
-# tmp = 0	# Rotary Temperary
-# button_interrupt_enabled = False
-# try:
-#     GPIO.remove_event_detect(BtnPin)
-# except RuntimeError:
-#     pass
+tmp = 0	# Rotary Temperary
+button_interrupt_enabled = False
+try:
+    GPIO.remove_event_detect(BtnPin)
+except RuntimeError:
+    pass
 
-# try:
-#     GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
-#     button_interrupt_enabled = True
-# except RuntimeError as e:
-#     print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
+try:
+    GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
+    button_interrupt_enabled = True
+except RuntimeError as e:
+    print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
 
 while True:
     # First, handle rotary encoder input
     # rotaryDeal()
-    # Last_RoB_Status = GPIO.input(RoBPin)
-    # if not GPIO.input(RoAPin):
-    #      Current_RoB_Status = GPIO.input(RoBPin)
-    #      flag = 1
-    # if flag == 1:
-    #     flag = 0
-    #     if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
-    #         send("VOLUME_UP", '/dev/hidg0')
-    #     if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
-    #         send("VOLUME_DOWN", '/dev/hidg0')
+    Last_RoB_Status = GPIO.input(RoBPin)
+    if not GPIO.input(RoAPin):
+         Current_RoB_Status = GPIO.input(RoBPin)
+         flag = 1
+    if flag == 1:
+        flag = 0
+        if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
+            send("VOLUME_UP", '/dev/hidg0')
+        if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
+            send("VOLUME_DOWN", '/dev/hidg0')
 
-    # if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
-    #     send("MUTE", '/dev/hidg0')
-    #     time.sleep(0.1)
-    # if tmp != globalCounter:
-    #     print(f'globalCounter = {globalCounter}')
-    #     tmp = globalCounter
+    if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
+        send("MUTE", '/dev/hidg0')
+        time.sleep(0.1)
+    if tmp != globalCounter:
+        print(f'globalCounter = {globalCounter}')
+        tmp = globalCounter
     r, w, xsel = select.select([touch], [], [], 0.01)
     if r:
         for event in touch.read():
