@@ -332,7 +332,7 @@ while True:
                                 text_rect = text.get_rect(center=btn['rect'].center)
                                 lcd.blit(text, text_rect)
                             refresh()
-                            time.sleep(0.3)
+                            time.sleep(0.1)
                             drawButtons()
                             refresh()
                             break
