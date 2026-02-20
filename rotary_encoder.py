@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import RPi.GPIO as GPIO
 import time
+from usbHidKeyboard import send
 
 RoAPin = 20    # CLK Pin
 RoBPin = 21    # DT Pin
@@ -11,6 +12,13 @@ globalCounter = 0
 flag = 0
 Last_RoB_Status = 0
 Current_RoB_Status = 0
+buttonPressed = False
+
+def trigger_action(action_value):
+	try:
+		send(action_value, '/dev/hidg0')
+	except Exception as e:
+		print(f"Failed to send {action_value}: {e}")
 
 def setup():
 	GPIO.setmode(GPIO.BCM)         # Numbers GPIOs by Broadcom SOC channel
@@ -35,11 +43,12 @@ def rotaryDeal():
 			globalCounter = globalCounter - 1
 
 def btnISR(channel):
-	global globalCounter
-	globalCounter = 0
+	global buttonPressed
+	buttonPressed = True
 
 def loop():
 	global globalCounter
+	global buttonPressed
 	tmp = 0	# Rotary Temperary
 
 	button_interrupt_enabled = False
@@ -59,7 +68,14 @@ def loop():
 		if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
 			btnISR(BtnPin)
 			time.sleep(0.2)
+		if buttonPressed:
+			trigger_action('MUTE')
+			buttonPressed = False
 		if tmp != globalCounter:
+			if globalCounter > tmp:
+				trigger_action('VOLUME_UP')
+			else:
+				trigger_action('VOLUME_DOWN')
 			print(f'globalCounter = {globalCounter}')
 			tmp = globalCounter
 
