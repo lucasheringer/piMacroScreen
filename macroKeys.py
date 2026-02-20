@@ -13,6 +13,7 @@ import json
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
 from io import BytesIO
 
+# We start by launching the fbtest utility to make sure the framebuffer device is properly initialized and ready to be written into.
 subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)

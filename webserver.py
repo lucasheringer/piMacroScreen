@@ -172,15 +172,16 @@ def get_media_keys():
 
 @app.route('/api/restart', methods=['POST'])
 def restart_macro_service():
-    """Restart the macro keyboard service"""
+    """Restart the macro keyboard service asynchronously"""
     try:
-        # Try to restart using systemctl
-        result = subprocess.run(['sudo', 'systemctl', 'restart', 'pimacrkeys.service'], 
-                              capture_output=True, text=True, timeout=5)
-        if result.returncode == 0:
-            return jsonify({'success': True, 'message': 'Service restarted successfully'})
-        else:
-            return jsonify({'success': False, 'message': f'Error: {result.stderr}'}), 500
+        # Restart in a detached process after a short delay so this HTTP response can complete.
+        subprocess.Popen(
+            ['bash', '-lc', 'sleep 1 && sudo systemctl restart pimacrkeys.service'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return jsonify({'success': True, 'message': 'Service restart requested'}), 202
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 

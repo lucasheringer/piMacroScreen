@@ -376,22 +376,70 @@ async function restartService() {
     if (!confirm('Are you sure you want to restart the macro keyboard service?')) {
         return;
     }
+
+    const restartBtn = document.getElementById('restartBtn');
+    const originalRestartLabel = restartBtn.textContent;
+    restartBtn.disabled = true;
+    restartBtn.textContent = '⏳ Restarting...';
     
     try {
         const response = await fetch('/api/restart', {
             method: 'POST'
         });
-        
-        const result = await response.json();
-        if (result.success) {
-            showToast('Service restarted successfully', 'success');
+
+        let result = { success: response.ok, message: '' };
+        try {
+            result = await response.json();
+        } catch (_) {
+            // Service restart can briefly interrupt the web server and return no body.
+        }
+
+        if (response.ok && result.success !== false) {
+            showToast('Service restart requested. Reconnecting...', 'success');
+
+            const reconnected = await waitForServerReconnect();
+            if (reconnected) {
+                await loadConfig();
+                showToast('Service restarted and reconnected', 'success');
+            } else {
+                showToast('Restart requested, but reconnect timed out', 'error');
+            }
         } else {
-            showToast('Failed to restart service: ' + result.message, 'error');
+            showToast('Failed to restart service: ' + (result.message || response.statusText), 'error');
         }
     } catch (error) {
-        showToast('Error restarting service', 'error');
+        showToast('Web server restarting. Reconnecting...', 'success');
+
+        const reconnected = await waitForServerReconnect();
+        if (reconnected) {
+            await loadConfig();
+            showToast('Service restarted and reconnected', 'success');
+        } else {
+            showToast('Could not reconnect yet. Please try again shortly', 'error');
+        }
+
         console.error('Error:', error);
+    } finally {
+        restartBtn.disabled = false;
+        restartBtn.textContent = originalRestartLabel;
     }
+}
+
+async function waitForServerReconnect(maxAttempts = 15, delayMs = 1000) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const response = await fetch('/api/config', { cache: 'no-store' });
+            if (response.ok) {
+                return true;
+            }
+        } catch (_) {
+            // Expected while the web service is restarting.
+        }
+
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+
+    return false;
 }
 
 // Show toast notification

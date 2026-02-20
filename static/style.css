@@ -220,6 +220,33 @@ header h1 {
     transform: scale(0.98);
 }
 
+#restartBtn:disabled {
+    position: relative;
+    opacity: 0.9;
+    cursor: wait;
+    padding-left: 42px;
+}
+
+#restartBtn:disabled::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: restartSpin 0.8s linear infinite;
+}
+
+@keyframes restartSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Modal */
 .modal {
     display: none;
