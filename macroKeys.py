@@ -17,91 +17,6 @@ subprocess.call("fbtest", shell=True)
 time.sleep(2)
 NULL_CHAR = chr(0)
 
-# Rotary Encoder Pins - using BCM numbering
-RoAPin = 20    # CLK Pin
-RoBPin = 21    # DT Pin
-BtnPin = 16    # Button Pin
-
-globalCounter = 0
-
-flag = 0
-Last_RoB_Status = 0
-Current_RoB_Status = 0
-last_clk_state = GPIO.HIGH
-last_rotary_event_time = 0.0
-ROTARY_DEBOUNCE_SEC = 0.003
-
-def setup():
-    GPIO.setmode(GPIO.BCM)         # Numbers GPIOs by Broadcom SOC channel
-    GPIO.setup(RoAPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(RoBPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(BtnPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-def handle_rotary():
-    global last_clk_state, last_rotary_event_time
-
-    clk_state = GPIO.input(RoAPin)
-    dt_state = GPIO.input(RoBPin)
-    now = time.time()
-
-    if clk_state != last_clk_state and clk_state == GPIO.LOW:
-        if now - last_rotary_event_time >= ROTARY_DEBOUNCE_SEC:
-            if dt_state != clk_state:
-                send("VOLUME_UP", '/dev/hidg0')
-            else:
-                send("VOLUME_DOWN", '/dev/hidg0')
-            last_rotary_event_time = now
-
-    last_clk_state = clk_state
-
-def rotaryDeal():
-	global flag
-	global Last_RoB_Status
-	global Current_RoB_Status
-	global globalCounter
-	Last_RoB_Status = GPIO.input(RoBPin)
-	while not GPIO.input(RoAPin):
-		Current_RoB_Status = GPIO.input(RoBPin)
-		flag = 1
-	if flag == 1:
-		flag = 0
-		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
-			send("VOLUME_UP", '/dev/hidg0')
-		if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
-			send("VOLUME_DOWN", '/dev/hidg0')
-
-def btnISR(channel):
-	global globalCounter
-	globalCounter = 0
-
-def loop():
-	global globalCounter
-	tmp = 0	# Rotary Temperary
-
-	button_interrupt_enabled = False
-	try:
-		GPIO.remove_event_detect(BtnPin)
-	except RuntimeError:
-		pass
-
-	try:
-		GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
-		button_interrupt_enabled = True
-	except RuntimeError as e:
-		print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
-
-	while True:
-		rotaryDeal()
-		if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
-			btnISR(BtnPin)
-			time.sleep(0.2)
-		if tmp != globalCounter:
-			print(f'globalCounter = {globalCounter}')
-			tmp = globalCounter
-
-def destroy():
-	GPIO.cleanup()             # Release resource
-
 # Load configuration from JSON file
 def load_config(config_file='config.json'):
     """Load configuration from JSON file"""
@@ -358,33 +273,7 @@ def run_screensaver():
         pygame.draw.circle(lcd, (255,255,255), (int(x), int(y)), 3)
         refresh()
 
-# Non-blocking main loop with inactivity check
-setup()
-last_clk_state = GPIO.input(RoAPin)
-
-tmp = 0	# Rotary Temperary
-button_interrupt_enabled = False
-try:
-    GPIO.remove_event_detect(BtnPin)
-except RuntimeError:
-    pass
-
-try:
-    GPIO.add_event_detect(BtnPin, GPIO.FALLING, callback=btnISR, bouncetime=200)
-    button_interrupt_enabled = True
-except RuntimeError as e:
-    print(f"Warning: button edge detect unavailable ({e}). Using polling fallback.")
-
 while True:
-    # First, handle rotary encoder input
-    handle_rotary()
-
-    if not button_interrupt_enabled and GPIO.input(BtnPin) == GPIO.LOW:
-        send("MUTE", '/dev/hidg0')
-        time.sleep(0.01)
-    if tmp != globalCounter:
-        print(f'globalCounter = {globalCounter}')
-        tmp = globalCounter
     r, w, xsel = select.select([touch], [], [], 0.01)
     if r:
         for event in touch.read():
