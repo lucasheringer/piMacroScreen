@@ -3,6 +3,7 @@ let config = null;
 let currentButton = null;
 let availableIcons = [];
 let availableMediaKeys = [];
+const THEME_MODE_STORAGE_KEY = 'themeMode';
 
 const HID_PRESETS = [
     { label: 'Custom (manual HEX)', value: '' },
@@ -32,11 +33,33 @@ const HID_PRESETS = [
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
+    initializeThemeMode();
     await loadConfig();
     await loadMediaKeys();
     await loadIcons();
     setupEventListeners();
 });
+
+function initializeThemeMode() {
+    const savedMode = localStorage.getItem(THEME_MODE_STORAGE_KEY) || 'auto';
+    applyThemeMode(savedMode);
+}
+
+function applyThemeMode(mode) {
+    const root = document.documentElement;
+    const normalizedMode = mode === 'dark' || mode === 'light' ? mode : 'auto';
+
+    if (normalizedMode === 'auto') {
+        root.removeAttribute('data-theme');
+    } else {
+        root.setAttribute('data-theme', normalizedMode);
+    }
+
+    const themeSelect = document.getElementById('themeMode');
+    if (themeSelect) {
+        themeSelect.value = normalizedMode;
+    }
+}
 
 // Load configuration from server
 async function loadConfig() {
@@ -507,6 +530,13 @@ function showToast(message, type = 'success') {
 
 // Setup event listeners
 function setupEventListeners() {
+    // Theme mode change
+    document.getElementById('themeMode').addEventListener('change', (e) => {
+        const mode = e.target.value;
+        localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
+        applyThemeMode(mode);
+    });
+
     // Save button
     document.getElementById('saveBtn').addEventListener('click', saveConfiguration);
     

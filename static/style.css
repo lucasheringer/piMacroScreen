@@ -13,56 +13,107 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-    body {
+    :root:not([data-theme="light"]) body {
         background: #2a2a2a;
     }
 
-    .container {
+    :root:not([data-theme="light"]) .container {
         background: #1f1f1f;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
     }
 
-    header {
+    :root:not([data-theme="light"]) header {
         background: #252525;
         color: #f2f2f2;
         border-bottom: 1px solid #3a3a3a;
     }
 
-    header h1 {
+    :root:not([data-theme="light"]) header h1 {
         color: #f2f2f2;
     }
 
-    .config-section h2 {
+    :root:not([data-theme="light"]) .config-section h2 {
         color: #e5e5e5;
         border-bottom-color: #5f6dc9;
     }
 
-    .current-background {
+    :root:not([data-theme="light"]) .current-background {
         background: #2c2c2c;
     }
 
-    .current-background label {
+    :root:not([data-theme="light"]) .current-background label {
         color: #d6d6d6;
     }
 
-    .button-card {
+    :root:not([data-theme="light"]) .button-card {
         background: #2b2b2b;
         border-color: #3f3f3f;
     }
 
-    .button-card:hover {
+    :root:not([data-theme="light"]) .button-card:hover {
         border-color: #7a88e8;
         box-shadow: 0 5px 15px rgba(122, 136, 232, 0.25);
     }
 
-    .button-card-title,
-    .button-info-value {
+    :root:not([data-theme="light"]) .button-card-title,
+    :root:not([data-theme="light"]) .button-info-value {
         color: #ececec;
     }
 
-    .button-info-label {
+    :root:not([data-theme="light"]) .button-info-label {
         color: #b8b8b8;
     }
+}
+
+:root[data-theme="dark"] body {
+    background: #2a2a2a;
+}
+
+:root[data-theme="dark"] .container {
+    background: #1f1f1f;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] header {
+    background: #252525;
+    color: #f2f2f2;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+:root[data-theme="dark"] header h1 {
+    color: #f2f2f2;
+}
+
+:root[data-theme="dark"] .config-section h2 {
+    color: #e5e5e5;
+    border-bottom-color: #5f6dc9;
+}
+
+:root[data-theme="dark"] .current-background {
+    background: #2c2c2c;
+}
+
+:root[data-theme="dark"] .current-background label {
+    color: #d6d6d6;
+}
+
+:root[data-theme="dark"] .button-card {
+    background: #2b2b2b;
+    border-color: #3f3f3f;
+}
+
+:root[data-theme="dark"] .button-card:hover {
+    border-color: #7a88e8;
+    box-shadow: 0 5px 15px rgba(122, 136, 232, 0.25);
+}
+
+:root[data-theme="dark"] .button-card-title,
+:root[data-theme="dark"] .button-info-value {
+    color: #ececec;
+}
+
+:root[data-theme="dark"] .button-info-label {
+    color: #b8b8b8;
 }
 
 .container {
@@ -93,7 +144,24 @@ header h1 {
 
 .header-buttons {
     display: flex;
+    align-items: center;
     gap: 10px;
+}
+
+.theme-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-switcher label {
+    font-weight: 600;
+    color: inherit;
+}
+
+.theme-switcher select {
+    min-width: 100px;
+    padding: 8px 12px;
 }
 
 /* Content */
