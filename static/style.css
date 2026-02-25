@@ -12,6 +12,27 @@ body {
     padding: 20px;
 }
 
+.auth-gate {
+    min-height: calc(100vh - 40px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.auth-card h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) body {
         background: #2a2a2a;
@@ -146,6 +167,17 @@ header h1 {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logged-in-user {
+    font-weight: 600;
+    color: inherit;
 }
 
 .theme-switcher {
@@ -517,6 +549,28 @@ header h1 {
 
 .hidden {
     display: none !important;
+}
+
+:root[data-theme="dark"] .auth-card {
+    background: #1f1f1f;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="dark"] .auth-card h2,
+:root[data-theme="dark"] .logged-in-user {
+    color: #f2f2f2;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .auth-card {
+        background: #1f1f1f;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    :root:not([data-theme="light"]) .auth-card h2,
+    :root:not([data-theme="light"]) .logged-in-user {
+        color: #f2f2f2;
+    }
 }
 
 /* Color Picker */

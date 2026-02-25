@@ -4,6 +4,7 @@ let currentButton = null;
 let availableIcons = [];
 let availableMediaKeys = [];
 const THEME_MODE_STORAGE_KEY = 'themeMode';
+let isAuthenticated = false;
 
 const HID_PRESETS = [
     { label: 'Custom (manual HEX)', value: '' },
@@ -34,11 +35,195 @@ const HID_PRESETS = [
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     initializeThemeMode();
+    setupEventListeners();
+    await initializeAuthState();
+});
+
+async function initializeAuthState() {
+    try {
+        const statusResponse = await fetch('/api/auth/status');
+        const status = await statusResponse.json();
+
+        if (status.authenticated) {
+            showApp(status.username);
+            await loadInitialData();
+        } else {
+            showLogin();
+        }
+    } catch (error) {
+        showLogin();
+        console.error('Error checking authentication status:', error);
+    }
+}
+
+async function loadInitialData() {
     await loadConfig();
     await loadMediaKeys();
     await loadIcons();
-    setupEventListeners();
-});
+}
+
+function showLogin() {
+    isAuthenticated = false;
+    document.getElementById('authGate').classList.remove('hidden');
+    document.getElementById('appContainer').classList.add('hidden');
+}
+
+function showApp(username) {
+    isAuthenticated = true;
+    document.getElementById('loggedInUser').textContent = username || 'admin';
+    document.getElementById('authGate').classList.add('hidden');
+    document.getElementById('appContainer').classList.remove('hidden');
+}
+
+async function apiFetch(url, options = {}) {
+    const response = await fetch(url, options);
+
+    if (response.status === 401) {
+        showLogin();
+        throw new Error('Authentication required');
+    }
+
+    return response;
+}
+
+async function login(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!username || !password) {
+        showToast('Username and password are required', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+            showApp(username);
+            document.getElementById('loginPassword').value = '';
+            await loadInitialData();
+            showToast('Login successful', 'success');
+            return;
+        }
+
+        showToast(result.message || 'Login failed', 'error');
+    } catch (error) {
+        showToast('Login failed', 'error');
+        console.error('Error during login:', error);
+    }
+}
+
+async function logout() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+        console.error('Error during logout:', error);
+    } finally {
+        showLogin();
+        showToast('Logged out', 'success');
+    }
+}
+
+function openChangePasswordModal() {
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmNewPassword').value = '';
+    document.getElementById('changePasswordModal').classList.add('show');
+}
+
+function openChangeUsernameModal() {
+    document.getElementById('newUsername').value = document.getElementById('loggedInUser').textContent.trim();
+    document.getElementById('usernameCurrentPassword').value = '';
+    document.getElementById('changeUsernameModal').classList.add('show');
+}
+
+async function changePassword(event) {
+    event.preventDefault();
+
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+    if (newPassword !== confirmNewPassword) {
+        showToast('New passwords do not match', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiFetch('/api/auth/change_password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+            closeModal('changePasswordModal');
+            showToast('Password updated successfully', 'success');
+        } else {
+            showToast(result.message || 'Failed to update password', 'error');
+        }
+    } catch (error) {
+        if (error.message !== 'Authentication required') {
+            showToast('Failed to update password', 'error');
+            console.error('Error changing password:', error);
+        }
+    }
+}
+
+async function changeUsername(event) {
+    event.preventDefault();
+
+    const newUsername = document.getElementById('newUsername').value.trim();
+    const currentPassword = document.getElementById('usernameCurrentPassword').value;
+
+    if (newUsername.length < 3) {
+        showToast('Username must be at least 3 characters', 'error');
+        return;
+    }
+
+    try {
+        const response = await apiFetch('/api/auth/change_username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                new_username: newUsername,
+                current_password: currentPassword
+            })
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+            document.getElementById('loggedInUser').textContent = result.username || newUsername;
+            document.getElementById('loginUsername').value = result.username || newUsername;
+            closeModal('changeUsernameModal');
+            showToast('Username updated successfully', 'success');
+        } else {
+            showToast(result.message || 'Failed to update username', 'error');
+        }
+    } catch (error) {
+        if (error.message !== 'Authentication required') {
+            showToast('Failed to update username', 'error');
+            console.error('Error changing username:', error);
+        }
+    }
+}
 
 function initializeThemeMode() {
     const savedMode = localStorage.getItem(THEME_MODE_STORAGE_KEY) || 'auto';
@@ -64,11 +249,13 @@ function applyThemeMode(mode) {
 // Load configuration from server
 async function loadConfig() {
     try {
-        const response = await fetch('/api/config');
+        const response = await apiFetch('/api/config');
         config = await response.json();
         updateUI();
     } catch (error) {
-        showToast('Failed to load configuration', 'error');
+        if (error.message !== 'Authentication required') {
+            showToast('Failed to load configuration', 'error');
+        }
         console.error('Error loading config:', error);
     }
 }
@@ -251,7 +438,7 @@ function syncHidPresetSelection(hidValue) {
 // Load available media keys
 async function loadMediaKeys() {
     try {
-        const response = await fetch('/api/media_keys');
+        const response = await apiFetch('/api/media_keys');
         availableMediaKeys = await response.json();
         
         const select = document.getElementById('mediaKeySelect');
@@ -263,17 +450,21 @@ async function loadMediaKeys() {
             select.appendChild(option);
         });
     } catch (error) {
-        console.error('Error loading media keys:', error);
+        if (error.message !== 'Authentication required') {
+            console.error('Error loading media keys:', error);
+        }
     }
 }
 
 // Load available icons
 async function loadIcons() {
     try {
-        const response = await fetch('/api/icons');
+        const response = await apiFetch('/api/icons');
         availableIcons = await response.json();
     } catch (error) {
-        console.error('Error loading icons:', error);
+        if (error.message !== 'Authentication required') {
+            console.error('Error loading icons:', error);
+        }
     }
 }
 
@@ -369,7 +560,7 @@ async function saveButtonConfig(event) {
     };
     
     try {
-        const response = await fetch(`/api/button/${currentButton.id}`, {
+        const response = await apiFetch(`/api/button/${currentButton.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -386,15 +577,17 @@ async function saveButtonConfig(event) {
             showToast('Failed to update button: ' + result.message, 'error');
         }
     } catch (error) {
-        showToast('Error updating button', 'error');
-        console.error('Error:', error);
+        if (error.message !== 'Authentication required') {
+            showToast('Error updating button', 'error');
+            console.error('Error:', error);
+        }
     }
 }
 
 // Save entire configuration
 async function saveConfiguration() {
     try {
-        const response = await fetch('/api/config', {
+        const response = await apiFetch('/api/config', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -409,8 +602,10 @@ async function saveConfiguration() {
             showToast('Failed to save configuration: ' + result.message, 'error');
         }
     } catch (error) {
-        showToast('Error saving configuration', 'error');
-        console.error('Error:', error);
+        if (error.message !== 'Authentication required') {
+            showToast('Error saving configuration', 'error');
+            console.error('Error:', error);
+        }
     }
 }
 
@@ -428,7 +623,7 @@ async function uploadBackground() {
     formData.append('file', file);
     
     try {
-        const response = await fetch('/api/background', {
+        const response = await apiFetch('/api/background', {
             method: 'POST',
             body: formData
         });
@@ -441,8 +636,10 @@ async function uploadBackground() {
             showToast('Failed to upload background: ' + result.message, 'error');
         }
     } catch (error) {
-        showToast('Error uploading background', 'error');
-        console.error('Error:', error);
+        if (error.message !== 'Authentication required') {
+            showToast('Error uploading background', 'error');
+            console.error('Error:', error);
+        }
     }
 }
 
@@ -458,7 +655,7 @@ async function restartService() {
     restartBtn.textContent = '⏳ Restarting...';
     
     try {
-        const response = await fetch('/api/restart', {
+        const response = await apiFetch('/api/restart', {
             method: 'POST'
         });
 
@@ -483,6 +680,9 @@ async function restartService() {
             showToast('Failed to restart service: ' + (result.message || response.statusText), 'error');
         }
     } catch (error) {
+        if (error.message === 'Authentication required') {
+            return;
+        }
         showToast('Web server restarting. Reconnecting...', 'success');
 
         const reconnected = await waitForServerReconnect();
@@ -530,6 +730,13 @@ function showToast(message, type = 'success') {
 
 // Setup event listeners
 function setupEventListeners() {
+    document.getElementById('loginForm').addEventListener('submit', login);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('changeUsernameBtn').addEventListener('click', openChangeUsernameModal);
+    document.getElementById('changePasswordBtn').addEventListener('click', openChangePasswordModal);
+    document.getElementById('changeUsernameForm').addEventListener('submit', changeUsername);
+    document.getElementById('changePasswordForm').addEventListener('submit', changePassword);
+
     // Theme mode change
     document.getElementById('themeMode').addEventListener('change', (e) => {
         const mode = e.target.value;

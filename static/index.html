@@ -7,10 +7,33 @@
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <div class="container">
+    <div id="authGate" class="auth-gate">
+        <div class="auth-card">
+            <h2>🔐 Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" class="form-control" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appContainer" class="container hidden">
         <header>
             <h1>🎛️ Stream Deck Configuration</h1>
             <div class="header-buttons">
+                <div class="user-menu">
+                    <span id="loggedInUser" class="logged-in-user">admin</span>
+                    <button id="changeUsernameBtn" class="btn btn-small">👤 Change Username</button>
+                    <button id="changePasswordBtn" class="btn btn-small">🔑 Change Password</button>
+                    <button id="logoutBtn" class="btn btn-small btn-secondary">🚪 Logout</button>
+                </div>
                 <div class="theme-switcher">
                     <label for="themeMode">Theme:</label>
                     <select id="themeMode" class="form-control">
@@ -156,6 +179,62 @@
                 <div class="icon-grid" id="iconGrid">
                     <!-- Icons will be populated here -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔑 Change Password</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" class="form-control" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Username Modal -->
+    <div id="changeUsernameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👤 Change Username</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="changeUsernameForm">
+                    <div class="form-group">
+                        <label for="newUsername">New Username</label>
+                        <input type="text" id="newUsername" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="usernameCurrentPassword">Current Password</label>
+                        <input type="password" id="usernameCurrentPassword" class="form-control" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Update Username</button>
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
