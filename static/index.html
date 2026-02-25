@@ -93,9 +93,24 @@
                     </div>
 
                     <div class="form-group hidden" id="hidReportGroup">
-                        <label for="hidReport">HID Report (hex with colons):</label>
+                        <label for="hidPresetSelect">Keyboard Shortcut Preset:</label>
+                        <select id="hidPresetSelect" class="form-control">
+                            <!-- Options will be populated dynamically -->
+                        </select>
+
+                        <label for="hidReport" style="margin-top: 12px;">HID Report (hex with colons):</label>
                         <input type="text" id="hidReport" class="form-control" placeholder="01:0D:00:10:00:00:00:00:00">
-                        <small>Example: 01:0D:00:10:00:00:00:00:00</small>
+                        <small>Select a preset or type your own report manually.</small>
+
+                        <div class="hid-help">
+                            <strong>How to build a custom HID report</strong>
+                            <p>Format: <code>01:MM:00:KK:00:00:00:00:00</code></p>
+                            <ul>
+                                <li><strong>MM</strong> = modifier byte (OR the values): Ctrl <code>01</code>, Shift <code>02</code>, Alt <code>04</code>, GUI/Win <code>08</code></li>
+                                <li><strong>KK</strong> = key usage code (examples: Tab <code>2B</code>, Enter <code>28</code>, C <code>06</code>, V <code>19</code>, F4 <code>3D</code>)</li>
+                                <li>Examples: Alt+Tab = <code>01:04:00:2B:00:00:00:00:00</code>, Ctrl+C = <code>01:01:00:06:00:00:00:00:00</code></li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="form-group hidden" id="shellCommandGroup">

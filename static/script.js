@@ -4,6 +4,32 @@ let currentButton = null;
 let availableIcons = [];
 let availableMediaKeys = [];
 
+const HID_PRESETS = [
+    { label: 'Custom (manual HEX)', value: '' },
+    { label: 'Alt + Tab', value: '01:04:00:2B:00:00:00:00:00' },
+    { label: 'Alt + F4', value: '01:04:00:3D:00:00:00:00:00' },
+    { label: 'Ctrl + C', value: '01:01:00:06:00:00:00:00:00' },
+    { label: 'Ctrl + V', value: '01:01:00:19:00:00:00:00:00' },
+    { label: 'Ctrl + X', value: '01:01:00:1B:00:00:00:00:00' },
+    { label: 'Ctrl + Z', value: '01:01:00:1D:00:00:00:00:00' },
+    { label: 'Ctrl + Y', value: '01:01:00:1C:00:00:00:00:00' },
+    { label: 'Ctrl + A', value: '01:01:00:04:00:00:00:00:00' },
+    { label: 'Ctrl + S', value: '01:01:00:16:00:00:00:00:00' },
+    { label: 'Ctrl + P', value: '01:01:00:13:00:00:00:00:00' },
+    { label: 'Ctrl + F', value: '01:01:00:09:00:00:00:00:00' },
+    { label: 'Ctrl + N', value: '01:01:00:11:00:00:00:00:00' },
+    { label: 'Ctrl + T', value: '01:01:00:17:00:00:00:00:00' },
+    { label: 'Ctrl + W', value: '01:01:00:1A:00:00:00:00:00' },
+    { label: 'Ctrl + Shift + Esc', value: '01:03:00:29:00:00:00:00:00' },
+    { label: 'Win + R', value: '01:08:00:15:00:00:00:00:00' },
+    { label: 'Win + D', value: '01:08:00:07:00:00:00:00:00' },
+    { label: 'Win + L', value: '01:08:00:0F:00:00:00:00:00' },
+    { label: 'Enter', value: '01:00:00:28:00:00:00:00:00' },
+    { label: 'Escape', value: '01:00:00:29:00:00:00:00:00' },
+    { label: 'Tab', value: '01:00:00:2B:00:00:00:00:00' },
+    { label: 'Space', value: '01:00:00:2C:00:00:00:00:00' }
+];
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     await loadConfig();
@@ -145,6 +171,7 @@ function openEditModal(button) {
         document.getElementById('mediaKeySelect').value = button.action_value;
     } else if (button.action_type === 'hid') {
         document.getElementById('hidReport').value = button.action_value;
+        syncHidPresetSelection(button.action_value);
     } else if (button.action_type === 'shell') {
         document.getElementById('shellCommand').value = button.action_value;
     }
@@ -168,9 +195,34 @@ function updateActionFields(actionType) {
         document.getElementById('mediaKeyGroup').classList.remove('hidden');
     } else if (actionType === 'hid') {
         document.getElementById('hidReportGroup').classList.remove('hidden');
+        syncHidPresetSelection(document.getElementById('hidReport').value);
     } else if (actionType === 'shell') {
         document.getElementById('shellCommandGroup').classList.remove('hidden');
     }
+}
+
+function normalizeHidValue(value) {
+    return (value || '').trim().toUpperCase();
+}
+
+function loadHidPresets() {
+    const select = document.getElementById('hidPresetSelect');
+    select.innerHTML = '';
+
+    HID_PRESETS.forEach(preset => {
+        const option = document.createElement('option');
+        option.value = preset.value;
+        option.textContent = preset.label;
+        select.appendChild(option);
+    });
+}
+
+function syncHidPresetSelection(hidValue) {
+    const select = document.getElementById('hidPresetSelect');
+    const normalizedValue = normalizeHidValue(hidValue);
+
+    const matchingPreset = HID_PRESETS.find(preset => normalizeHidValue(preset.value) === normalizedValue);
+    select.value = matchingPreset ? matchingPreset.value : '';
 }
 
 // Load available media keys
@@ -471,6 +523,19 @@ function setupEventListeners() {
     document.getElementById('actionType').addEventListener('change', (e) => {
         updateActionFields(e.target.value);
     });
+
+    // HID preset change
+    document.getElementById('hidPresetSelect').addEventListener('change', (e) => {
+        const selectedValue = e.target.value;
+        if (selectedValue) {
+            document.getElementById('hidReport').value = selectedValue;
+        }
+    });
+
+    // HID manual input
+    document.getElementById('hidReport').addEventListener('input', (e) => {
+        syncHidPresetSelection(e.target.value);
+    });
     
     // Color pickers
     document.getElementById('buttonColorPicker').addEventListener('input', (e) => {
@@ -508,3 +573,5 @@ function setupEventListeners() {
         }
     });
 }
+
+loadHidPresets();

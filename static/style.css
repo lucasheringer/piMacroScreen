@@ -360,6 +360,38 @@ header h1 {
     font-size: 12px;
 }
 
+.hid-help {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fafafa;
+    font-size: 12px;
+    color: #444;
+}
+
+.hid-help strong {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.hid-help p {
+    margin-bottom: 6px;
+}
+
+.hid-help ul {
+    margin-left: 18px;
+}
+
+.hid-help li {
+    margin-bottom: 4px;
+}
+
+.hid-help code {
+    font-family: monospace;
+    color: #333;
+}
+
 .hidden {
     display: none !important;
 }
