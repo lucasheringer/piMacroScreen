@@ -110,6 +110,13 @@
                                 <li><strong>KK</strong> = key usage code (examples: Tab <code>2B</code>, Enter <code>28</code>, C <code>06</code>, V <code>19</code>, F4 <code>3D</code>)</li>
                                 <li>Examples: Alt+Tab = <code>01:04:00:2B:00:00:00:00:00</code>, Ctrl+C = <code>01:01:00:06:00:00:00:00:00</code></li>
                             </ul>
+                            <strong>How to find the HEX code for a key</strong>
+                            <ul>
+                                <li>Use the USB HID Keyboard/Keypad Usage Table (Usage Page <code>0x07</code>) and find your key name.</li>
+                                <li>Use the key's <em>usage ID</em> as <strong>KK</strong> in hex (2 digits). Example: key <code>Q</code> has usage <code>0x14</code>, so <strong>KK</strong> is <code>14</code>.</li>
+                                <li>For letters, a quick rule is: <code>A=04</code>, <code>B=05</code>, ... <code>Z=1D</code>. Numbers are <code>1=1E</code> through <code>0=27</code>.</li>
+                                <li>Then combine modifiers in <strong>MM</strong> (for example Ctrl+Shift = <code>01|02 = 03</code>) and build the final report.</li>
+                            </ul>
                         </div>
                     </div>
 
