@@ -5,10 +5,11 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/lheringer/piMacroScreen
-ExecStart=/home/lheringer/piMacroScreen/start_services.sh start
-ExecStop=/home/lheringer/piMacroScreen/start_services.sh stop
-ExecReload=/home/lheringer/piMacroScreen/start_services.sh reload
+Environment="APP_DIR=/home/lheringer/piMacroScreen"
+WorkingDirectory=${APP_DIR}
+ExecStart=${APP_DIR}/start_services.sh start
+ExecStop=${APP_DIR}/start_services.sh stop
+ExecReload=${APP_DIR}/start_services.sh reload
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

@@ -63,8 +63,14 @@ If successful, `/dev/hidg0` should be present and writable.
 
 ### Service file path
 
-The provided `pimacrkeys.service` currently points to `/home/lheringer/piMacroScreen`.
-Update it to your own project path before enabling the service.
+The provided `pimacrkeys.service` uses an `APP_DIR` environment variable.
+Update `APP_DIR` to your own project path before enabling the service.
+
+Example:
+
+```ini
+Environment="APP_DIR=/home/pi/piMacroScreen"
+```
 
 ### Start script executable bit
 

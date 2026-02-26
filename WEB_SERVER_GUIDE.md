@@ -15,7 +15,7 @@ The web server allows you to configure your macro keyboard through a modern web 
 
 1. Navigate to the project directory:
    ```bash
-   cd /Users/lucasheringer/Code/piMacroScreen
+   cd /path/to/piMacroScreen
    ```
 
 2. Run the web server:
@@ -146,6 +146,14 @@ Execute any bash command:
 
 ## Running on Startup
 
+Before enabling startup services, set `APP_DIR` in `pimacrkeys.service` to your installation path.
+
+Example:
+
+```ini
+Environment="APP_DIR=/home/pi/piMacroScreen"
+```
+
 To run the web server automatically on boot:
 
 1. Create a systemd service file `/etc/systemd/system/macrokeys-web.service`:
@@ -194,9 +202,9 @@ To run the web server automatically on boot:
 ## Security Notes
 
 - The web server runs on all interfaces (0.0.0.0) by default
-- Consider using a firewall if exposing to network
-- For production, consider adding authentication
-- The server runs in debug mode - disable for production
+- Use firewall/router rules to limit access to your local network
+- Authentication is enabled by default; change credentials after first login
+- Disable debug mode for production or internet-exposed environments
 
 ## API Endpoints
 

@@ -313,4 +313,4 @@ def serve_upload(filename):
 if __name__ == '__main__':
     load_auth()
     # Run on all interfaces so it's accessible from other devices on the network
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
