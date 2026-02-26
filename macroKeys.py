@@ -7,7 +7,7 @@
 # - a device to get input from it, e.g. /dev/input/touchscreen
 ##
 
-import pygame, time, evdev, select, math, subprocess, random, cairosvg, glob, os
+import pygame, time, evdev, select, math, subprocess, random, cairosvg, glob, os, shlex
 import RPi.GPIO as GPIO
 import json
 from usbHidKeyboard import send, KEYS_ALLOWED, DEFAULT_HID
@@ -315,7 +315,10 @@ while True:
                             elif action_type == 'shell':
                                 # Execute shell command
                                 try:
-                                    subprocess.call(action_value, shell=True)
+                                    command_parts = shlex.split(action_value)
+                                    if not command_parts:
+                                        raise ValueError("Command is empty")
+                                    subprocess.run(command_parts, check=False)
                                 except Exception as e:
                                     print(f"Error executing shell command: {e}")
 
