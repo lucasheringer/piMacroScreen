@@ -1,6 +1,6 @@
 # piMacroScreen
 
-Touchscreen-based macro pad + USB HID keyboard/media controller for Raspberry Pi, with a web UI to configure buttons, icons, and actions.
+Touchscreen-based macro pad + USB HID keyboard/media controller for Raspberry Pi 4, with a web UI to configure buttons, icons, and actions.
 
 ## What this project runs
 
@@ -13,7 +13,7 @@ Touchscreen-based macro pad + USB HID keyboard/media controller for Raspberry Pi
 
 ### Hardware
 
-- Raspberry Pi (USB gadget capable model)
+- Raspberry Pi 4 (USB gadget capable model - pi 4 and pico w are the only capable models) 
 - 320x240 touchscreen wired and configured
 - Rotary encoder (optional)
 
