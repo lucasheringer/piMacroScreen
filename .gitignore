@@ -1,2 +1,6 @@
 .env*
 *__pycache__*
+auth.json
+uploads/*
+!uploads/.gitkeep
+.pytest_cache/
