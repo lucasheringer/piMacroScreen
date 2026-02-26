@@ -35,6 +35,18 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Show pytest collection
+      run: |
+        pytest --collect-only -q
     - name: Test with pytest
       run: |
+        set +e
         pytest
+        exit_code=$?
+        set -e
+
+        if [ "$exit_code" -eq 5 ]; then
+          echo "::error::Pytest collected 0 tests (exit code 5). Add tests in the tests/ folder (for example: tests/test_*.py)."
+        fi
+
+        exit "$exit_code"
