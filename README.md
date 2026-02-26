@@ -1,6 +1,8 @@
 # piMacroScreen
 
 Touchscreen-based macro pad + USB HID keyboard/media controller for Raspberry Pi 4, with a web UI to configure buttons, icons, and actions.
+Work based on this repo - https://github.com/DevOps-Nirvana/python-usb-gadget-send-multimedia-hid-commands 
+Follow instructions on the above on how to setup a USB Gadget raspberry Pi
 
 ## What this project runs
 
