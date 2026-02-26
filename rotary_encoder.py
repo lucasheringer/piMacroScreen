@@ -47,7 +47,6 @@ def btnISR(channel):
 	buttonPressed = True
 
 def loop():
-	global globalCounter
 	global buttonPressed
 	tmp = 0	# Rotary Temperary
 
