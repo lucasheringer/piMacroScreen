@@ -325,4 +325,4 @@ def serve_upload(filename):
 if __name__ == '__main__':
     load_auth()
     # Remember to change to your actual CIDR range or use 0.0.0.0 for all interfaces if you want to allow access from anywhere (not recommended for production without proper security measures).
-    app.run(host='192.168.1.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False)

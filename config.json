@@ -3,7 +3,12 @@
   "touchscreen": {
     "raw_origin": [3750, 180],
     "raw_end": [150, 3750],
-    "rotation": 180
+    "rotation": 180,
+    "abs_code_x": 0,
+    "abs_code_y": 1,
+    "swap_axes": false,
+    "invert_x": false,
+    "invert_y": false
   },
   "buttons": [
     {
