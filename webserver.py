@@ -63,9 +63,21 @@ def load_config():
     """Load configuration from JSON file"""
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as f:
-            return json.load(f)
+            config = json.load(f)
+            if 'touchscreen' not in config:
+                config['touchscreen'] = {
+                    'raw_origin': [3750, 180],
+                    'raw_end': [150, 3750],
+                    'rotation': 0
+                }
+            return config
     return {
         'background': 'bg.png',
+        'touchscreen': {
+            'raw_origin': [3750, 180],
+            'raw_end': [150, 3750],
+            'rotation': 0
+        },
         'buttons': []
     }
 

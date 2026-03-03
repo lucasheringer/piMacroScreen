@@ -134,6 +134,12 @@ journalctl -u pimacrkeys.service -f
 - Uploaded backgrounds: `uploads/`
 - Auth config (created automatically): `auth.json`
 
+Touch mapping can be tuned in `config.json` with:
+
+- `touchscreen.raw_origin`: raw evdev coordinate at screen top-left calibration point
+- `touchscreen.raw_end`: raw evdev coordinate at screen bottom-right calibration point
+- `touchscreen.rotation`: touch compensation rotation (`0`, `90`, `180`, `270`)
+
 Use the web UI to edit button actions, icons, colors, and background.
 
 ## Troubleshooting

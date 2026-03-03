@@ -246,6 +246,32 @@ function applyThemeMode(mode) {
     }
 }
 
+function ensureTouchscreenConfig() {
+    if (!config.touchscreen || typeof config.touchscreen !== 'object') {
+        config.touchscreen = {};
+    }
+
+    if (!Array.isArray(config.touchscreen.raw_origin) || config.touchscreen.raw_origin.length !== 2) {
+        config.touchscreen.raw_origin = [3750, 180];
+    }
+
+    if (!Array.isArray(config.touchscreen.raw_end) || config.touchscreen.raw_end.length !== 2) {
+        config.touchscreen.raw_end = [150, 3750];
+    }
+
+    const validRotations = [0, 90, 180, 270];
+    const rotation = Number(config.touchscreen.rotation);
+    config.touchscreen.rotation = validRotations.includes(rotation) ? rotation : 0;
+}
+
+function parseCoordinatePair(text) {
+    const parts = (text || '').split(',').map(part => Number(part.trim()));
+    if (parts.length !== 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) {
+        return null;
+    }
+    return parts;
+}
+
 // Load configuration from server
 async function loadConfig() {
     try {
@@ -262,8 +288,15 @@ async function loadConfig() {
 
 // Update UI with current configuration
 function updateUI() {
+    ensureTouchscreenConfig();
+
     // Update background display
     document.getElementById('currentBg').textContent = config.background;
+
+    // Update touchscreen calibration controls
+    document.getElementById('touchRawOrigin').value = config.touchscreen.raw_origin.join(', ');
+    document.getElementById('touchRawEnd').value = config.touchscreen.raw_end.join(', ');
+    document.getElementById('touchRotation').value = String(config.touchscreen.rotation);
     
     // Update buttons grid
     const buttonsGrid = document.getElementById('buttonsGrid');
@@ -586,6 +619,28 @@ async function saveButtonConfig(event) {
 
 // Save entire configuration
 async function saveConfiguration() {
+    const parsedOrigin = parseCoordinatePair(document.getElementById('touchRawOrigin').value);
+    const parsedEnd = parseCoordinatePair(document.getElementById('touchRawEnd').value);
+    const rotation = Number(document.getElementById('touchRotation').value);
+
+    if (!parsedOrigin || !parsedEnd) {
+        showToast('Touchscreen coordinates must be two numbers: X, Y', 'error');
+        return;
+    }
+
+    if (![0, 90, 180, 270].includes(rotation)) {
+        showToast('Touchscreen rotation must be 0, 90, 180, or 270', 'error');
+        return;
+    }
+
+    if (!config.touchscreen || typeof config.touchscreen !== 'object') {
+        config.touchscreen = {};
+    }
+
+    config.touchscreen.raw_origin = parsedOrigin;
+    config.touchscreen.raw_end = parsedEnd;
+    config.touchscreen.rotation = rotation;
+
     try {
         const response = await apiFetch('/api/config', {
             method: 'POST',

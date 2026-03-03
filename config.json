@@ -1,5 +1,10 @@
 {
   "background": "bg.png",
+  "touchscreen": {
+    "raw_origin": [3750, 180],
+    "raw_end": [150, 3750],
+    "rotation": 180
+  },
   "buttons": [
     {
       "id": 1,

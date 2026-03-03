@@ -122,10 +122,17 @@ refresh()
 
 # Used to map touch event from the screen hardware to the pygame surface pixels. 
 # (Those values have been found empirically, but I'm working on a simple interactive calibration tool
-tftOrig = (3750, 180)
-tftEnd = (150, 3750)
+touchscreen_config = CONFIG.get('touchscreen', {})
+
+tftOrig = tuple(touchscreen_config.get('raw_origin', [3750, 180]))
+tftEnd = tuple(touchscreen_config.get('raw_end', [150, 3750]))
 tftDelta = (tftEnd [0] - tftOrig [0], tftEnd [1] - tftOrig [1])
 tftAbsDelta = (abs(tftEnd [0] - tftOrig [0]), abs(tftEnd [1] - tftOrig [1]))
+
+touch_rotation = int(touchscreen_config.get('rotation', 0)) % 360
+if touch_rotation not in (0, 90, 180, 270):
+    print(f"Invalid touchscreen rotation '{touch_rotation}', using 0")
+    touch_rotation = 0
 
 # We use evdev to read events from our touchscreen
 # (The device must exist and be properly installed for this to work)
@@ -141,16 +148,33 @@ print(touch)
 
 # Here we convert the evdev "hardware" touch coordinates into pygame surface pixel coordinates
 def getPixelsFromCoordinates(coords):
-    # TODO check divide by 0!
-    if tftDelta [0] < 0:
-        x = float(tftAbsDelta [0] - coords [0] + tftEnd [0]) / float(tftAbsDelta [0]) * float(surfaceSize [0])
-    else:    
-        x = float(coords [0] - tftOrig [0]) / float(tftAbsDelta [0]) * float(surfaceSize [0])
-    if tftDelta [1] < 0:
-        y = float(tftAbsDelta [1] - coords [1] + tftEnd [1]) / float(tftAbsDelta [1]) * float(surfaceSize [1])
-    else:        
-        y = float(coords [1] - tftOrig [1]) / float(tftAbsDelta [1]) * float(surfaceSize [1])
-    return (int(x), int(y))
+    if tftAbsDelta[0] == 0 or tftAbsDelta[1] == 0:
+        return (0, 0)
+
+    # Convert raw touch coordinates to normalized coordinates (0.0-1.0)
+    nx = float(coords[0] - tftOrig[0]) / float(tftDelta[0]) if tftDelta[0] != 0 else 0.0
+    ny = float(coords[1] - tftOrig[1]) / float(tftDelta[1]) if tftDelta[1] != 0 else 0.0
+
+    # Clamp to valid range
+    nx = max(0.0, min(1.0, nx))
+    ny = max(0.0, min(1.0, ny))
+
+    # Apply configurable rotation compensation (clockwise)
+    if touch_rotation == 90:
+        nx, ny = (1.0 - ny), nx
+    elif touch_rotation == 180:
+        nx, ny = (1.0 - nx), (1.0 - ny)
+    elif touch_rotation == 270:
+        nx, ny = ny, (1.0 - nx)
+
+    x = int(nx * float(surfaceSize[0]))
+    y = int(ny * float(surfaceSize[1]))
+
+    # Clamp pixel coordinates to valid screen area
+    x = max(0, min(surfaceSize[0] - 1, x))
+    y = max(0, min(surfaceSize[1] - 1, y))
+
+    return (x, y)
 
 # Function to load SVG icon and convert to pygame surface
 def load_svg_icon(svg_path, size=60):
