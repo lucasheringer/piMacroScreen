@@ -339,4 +339,5 @@ while True:
     # Start screensaver if idle
     if not screensaver_active and (time.time() - last_activity) > SCREENSAVER_DELAY:
         run_screensaver()
+
 exit()
