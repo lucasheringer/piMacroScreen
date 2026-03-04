@@ -17,6 +17,7 @@ PID_DIR="/var/run/pimacrkeys"
 WEBSERVER_PID_FILE="$PID_DIR/webserver.pid"
 MACROKEYS_PID_FILE="$PID_DIR/macrokeys.pid"
 ROTARY_ENCODER_PID_FILE="$PID_DIR/rotary_encoder.pid"
+LCD16X2_PID_FILE="$PID_DIR/lcd16x2.pid"
 LOG_DIR="/var/log/pimacrkeys"
 
 # Create necessary directories
@@ -57,6 +58,17 @@ start_services() {
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] rotary_encoder started with PID $(cat $ROTARY_ENCODER_PID_FILE)" >> "$LOG_DIR/services.log"
     else
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] rotary_encoder already running (PID: $(cat $ROTARY_ENCODER_PID_FILE))" >> "$LOG_DIR/services.log"
+    fi
+
+    # Start lcd16x2 in background
+    if [[ ! -f "$LCD16X2_PID_FILE" ]] || ! kill -0 $(cat "$LCD16X2_PID_FILE" 2>/dev/null) 2>/dev/null; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting lcd16x2.py..." >> "$LOG_DIR/services.log"
+        cd "$SCRIPT_DIR"
+        nohup "$PYTHON_BIN" lcd16x2.py >> "$LOG_DIR/lcd16x2.log" 2>&1 &
+        echo $! > "$LCD16X2_PID_FILE"
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] lcd16x2 started with PID $(cat $LCD16X2_PID_FILE)" >> "$LOG_DIR/services.log"
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] lcd16x2 already running (PID: $(cat $LCD16X2_PID_FILE))" >> "$LOG_DIR/services.log"
     fi
     
     # Keep the script alive
@@ -123,7 +135,26 @@ stop_services() {
         fi
         rm -f "$ROTARY_ENCODER_PID_FILE"
     fi
-    
+
+    # Stop lcd16x2
+    if [[ -f "$LCD16X2_PID_FILE" ]]; then
+        LCD16X2_PID=$(cat "$LCD16X2_PID_FILE")
+        if kill -0 "$LCD16X2_PID" 2>/dev/null; then
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] Stopping lcd16x2 (PID: $LCD16X2_PID)..." >> "$LOG_DIR/services.log"
+            kill -TERM "$LCD16X2_PID" 2>/dev/null || true
+            # Wait up to 10 seconds for graceful shutdown
+            for i in {1..10}; do
+                if ! kill -0 "$LCD16X2_PID" 2>/dev/null; then
+                    break
+                fi
+                sleep 1
+            done
+            # Force kill if still running
+            kill -9 "$LCD16X2_PID" 2>/dev/null || true
+        fi
+        rm -f "$LCD16X2_PID_FILE"
+    fi
+
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Services stopped" >> "$LOG_DIR/services.log"
 }
 
@@ -165,6 +196,18 @@ wait_for_processes() {
                 cd "$SCRIPT_DIR"
                 nohup "$PYTHON_BIN" rotary_encoder.py >> "$LOG_DIR/rotary_encoder.log" 2>&1 &
                 echo $! > "$ROTARY_ENCODER_PID_FILE"
+            fi
+        fi
+
+        # Check if lcd16x2 is still running
+        if [[ -f "$LCD16X2_PID_FILE" ]]; then
+            LCD16X2_PID=$(cat "$LCD16X2_PID_FILE")
+            if ! kill -0 "$LCD16X2_PID" 2>/dev/null; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] lcd16x2 has died, restarting..." >> "$LOG_DIR/services.log"
+                rm -f "$LCD16X2_PID_FILE"
+                cd "$SCRIPT_DIR"
+                nohup "$PYTHON_BIN" lcd16x2.py >> "$LOG_DIR/lcd16x2.log" 2>&1 &
+                echo $! > "$LCD16X2_PID_FILE"
             fi
         fi
     done
