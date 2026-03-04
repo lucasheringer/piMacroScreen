@@ -122,8 +122,8 @@ refresh()
 
 # Used to map touch event from the screen hardware to the pygame surface pixels. 
 # (Those values have been found empirically, but I'm working on a simple interactive calibration tool
-tftOrig = (3750, 180)
-tftEnd = (150, 3750)
+tftOrig = (150, 3750)
+tftEnd = (3750, 180)
 tftDelta = (tftEnd [0] - tftOrig [0], tftEnd [1] - tftOrig [1])
 tftAbsDelta = (abs(tftEnd [0] - tftOrig [0]), abs(tftEnd [1] - tftOrig [1]))
 
