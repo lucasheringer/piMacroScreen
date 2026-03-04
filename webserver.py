@@ -63,9 +63,21 @@ def load_config():
     """Load configuration from JSON file"""
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as f:
-            return json.load(f)
+            config = json.load(f)
+            if 'touchscreen' not in config:
+                config['touchscreen'] = {
+                    'raw_origin': [3750, 180],
+                    'raw_end': [150, 3750],
+                    'rotation': 0
+                }
+            return config
     return {
         'background': 'bg.png',
+        'touchscreen': {
+            'raw_origin': [3750, 180],
+            'raw_end': [150, 3750],
+            'rotation': 0
+        },
         'buttons': []
     }
 
@@ -313,4 +325,4 @@ def serve_upload(filename):
 if __name__ == '__main__':
     load_auth()
     # Remember to change to your actual CIDR range or use 0.0.0.0 for all interfaces if you want to allow access from anywhere (not recommended for production without proper security measures).
-    app.run(host='192.168.1.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False)
