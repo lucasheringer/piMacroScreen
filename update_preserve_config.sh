@@ -6,6 +6,41 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 PRESERVE_FILES=("config.json" "auth.json")
+CURRENT_UID="$(id -u)"
+CURRENT_GID="$(id -g)"
+
+copy_with_fallback() {
+    local src="$1"
+    local dst="$2"
+
+    if cp -a "$src" "$dst" 2>/dev/null; then
+        return 0
+    fi
+
+    if command -v sudo >/dev/null 2>&1; then
+        echo "  - retrying copy with sudo for $dst"
+        sudo cp -a "$src" "$dst"
+        sudo chown "$CURRENT_UID:$CURRENT_GID" "$dst"
+        chmod u+rw "$dst" || true
+        return 0
+    fi
+
+    return 1
+}
+
+fix_root_owned_pycache() {
+    local found=0
+
+    while IFS= read -r -d '' dir; do
+        found=1
+        echo "  - fixing ownership: $dir"
+        sudo chown -R "$CURRENT_UID:$CURRENT_GID" "$dir"
+    done < <(find . -type d -name '__pycache__' -print0)
+
+    if [[ "$found" -eq 0 ]]; then
+        return 0
+    fi
+}
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "Error: this script must run inside a git repository."
@@ -39,7 +74,7 @@ echo "Backing up preserved files..."
 for file in "${PRESERVE_FILES[@]}"; do
     if [[ -e "$file" ]]; then
         mkdir -p "$backup_dir/$(dirname "$file")"
-        cp -a "$file" "$backup_dir/$file"
+        copy_with_fallback "$file" "$backup_dir/$file"
         backed_up_files+=("$file")
         echo "  - backed up $file"
     fi
@@ -52,9 +87,14 @@ if [[ "${#backed_up_files[@]}" -gt 0 ]]; then
     echo "Restoring preserved files..."
     for file in "${backed_up_files[@]}"; do
         mkdir -p "$(dirname "$file")"
-        cp -a "$backup_dir/$file" "$file"
+        copy_with_fallback "$backup_dir/$file" "$file"
         echo "  - restored $file"
     done
+fi
+
+if command -v sudo >/dev/null 2>&1; then
+    echo "Checking for root-owned __pycache__ directories..."
+    fix_root_owned_pycache || true
 fi
 
 echo "Update complete. Preserved files remain local:"
