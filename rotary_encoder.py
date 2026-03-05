@@ -14,6 +14,10 @@ Last_RoB_Status = 0
 Current_RoB_Status = 0
 buttonPressed = False
 
+# Small sleeps keep polling responsive while avoiding a full CPU core spin.
+INNER_POLL_SLEEP = 0.0005
+MAIN_LOOP_SLEEP = 0.001
+
 def trigger_action(action_value):
 	try:
 		send(action_value, '/dev/hidg0')
@@ -35,6 +39,7 @@ def rotaryDeal():
 	while not GPIO.input(RoAPin):
 		Current_RoB_Status = GPIO.input(RoBPin)
 		flag = 1
+		time.sleep(INNER_POLL_SLEEP)
 	if flag == 1:
 		flag = 0
 		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
@@ -77,6 +82,7 @@ def loop():
 				trigger_action('VOLUME_DOWN')
 			print(f'globalCounter = {globalCounter}')
 			tmp = globalCounter
+		time.sleep(MAIN_LOOP_SLEEP)
 
 def destroy():
 	GPIO.cleanup()             # Release resource
