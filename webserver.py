@@ -317,6 +317,38 @@ def restart_macro_service():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+@app.route('/api/system/restart', methods=['POST'])
+@login_required
+def restart_system():
+    """Restart the Raspberry Pi asynchronously."""
+    try:
+        subprocess.Popen(
+            ['bash', '-lc', 'sleep 1 && sudo reboot'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return jsonify({'success': True, 'message': 'System restart requested'}), 202
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/system/shutdown', methods=['POST'])
+@login_required
+def shutdown_system():
+    """Shut down the Raspberry Pi asynchronously."""
+    try:
+        subprocess.Popen(
+            ['bash', '-lc', 'sleep 1 && sudo shutdown -h now'],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return jsonify({'success': True, 'message': 'System shutdown requested'}), 202
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/uploads/<path:filename>')
 def serve_upload(filename):
     """Serve uploaded files"""

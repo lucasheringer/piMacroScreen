@@ -169,6 +169,35 @@ header h1 {
     gap: 10px;
 }
 
+.power-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    margin-left: 2px;
+    padding-left: 12px;
+}
+
+.power-actions::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 1px;
+    height: 28px;
+    transform: translateY(-50%);
+    background: currentColor;
+    opacity: 0.25;
+}
+
+.power-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.75;
+}
+
 .user-menu {
     display: flex;
     align-items: center;
@@ -680,6 +709,17 @@ header h1 {
     .header-buttons {
         width: 100%;
         flex-direction: column;
+    }
+
+    .power-actions {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+        padding-left: 0;
+    }
+
+    .power-actions::before {
+        display: none;
     }
 
     .buttons-grid {

@@ -717,6 +717,81 @@ async function waitForServerReconnect(maxAttempts = 15, delayMs = 1000) {
     return false;
 }
 
+async function restartSystem() {
+    if (!confirm('Are you sure you want to restart the Raspberry Pi now?')) {
+        return;
+    }
+
+    const btn = document.getElementById('restartSystemBtn');
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Restarting Pi...';
+
+    try {
+        const response = await apiFetch('/api/system/restart', {
+            method: 'POST'
+        });
+
+        let result = { success: response.ok, message: '' };
+        try {
+            result = await response.json();
+        } catch (_) {
+            // Device restart can interrupt response body.
+        }
+
+        if (response.ok && result.success !== false) {
+            showToast('Restart requested. Device will go offline briefly.', 'success');
+        } else {
+            showToast('Failed to restart device: ' + (result.message || response.statusText), 'error');
+        }
+    } catch (error) {
+        if (error.message !== 'Authentication required') {
+            showToast('Restart requested. Device may already be restarting.', 'success');
+            console.error('Error:', error);
+        }
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+    }
+}
+
+async function shutdownSystem() {
+    if (!confirm('Are you sure you want to shut down the Raspberry Pi now?')) {
+        return;
+    }
+
+    const btn = document.getElementById('shutdownBtn');
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Shutting down...';
+
+    try {
+        const response = await apiFetch('/api/system/shutdown', {
+            method: 'POST'
+        });
+
+        let result = { success: response.ok, message: '' };
+        try {
+            result = await response.json();
+        } catch (_) {
+            // Device shutdown can interrupt response body.
+        }
+
+        if (response.ok && result.success !== false) {
+            showToast('Shutdown requested. Device will go offline.', 'success');
+        } else {
+            showToast('Failed to shut down device: ' + (result.message || response.statusText), 'error');
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+        }
+    } catch (error) {
+        if (error.message !== 'Authentication required') {
+            showToast('Shutdown requested. Device may already be powering off.', 'success');
+            console.error('Error:', error);
+        }
+    }
+}
+
 // Show toast notification
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
@@ -749,6 +824,8 @@ function setupEventListeners() {
     
     // Restart button
     document.getElementById('restartBtn').addEventListener('click', restartService);
+    document.getElementById('restartSystemBtn').addEventListener('click', restartSystem);
+    document.getElementById('shutdownBtn').addEventListener('click', shutdownSystem);
     
     // Upload background button
     document.getElementById('uploadBgBtn').addEventListener('click', uploadBackground);
