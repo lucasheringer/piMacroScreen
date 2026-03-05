@@ -262,20 +262,35 @@ refresh()
 # Screensaver / inactivity configuration
 SCREENSAVER_DELAY = 300  # seconds (5 minutes)
 SCREENSAVER_FRAME_DELAY = 0.05  # seconds between animation frames
+SCREENSAVER_CONFIG = CONFIG.get('screensaver', {})
+SCREENSAVER_LINE_TRAIL = bool(SCREENSAVER_CONFIG.get('line_trail', False))
+SCREENSAVER_TRAIL_ALPHA = int(SCREENSAVER_CONFIG.get('trail_alpha', 40))
+if SCREENSAVER_TRAIL_ALPHA < 0:
+    SCREENSAVER_TRAIL_ALPHA = 0
+elif SCREENSAVER_TRAIL_ALPHA > 255:
+    SCREENSAVER_TRAIL_ALPHA = 255
 
 last_activity = time.time()
 screensaver_active = False
 
-# Simple screensaver: bouncing ball
+# Simple screensaver: bouncing colorful line
 def run_screensaver():
     global screensaver_active, last_activity
     screensaver_active = True
-    x = surfaceSize[0] // 2
-    y = surfaceSize[1] // 2
+    x = surfaceSize[0] // 2.0
+    y = surfaceSize[1] // 2.0
     vx = 3
     vy = 2
-    radius = random.randint(8, 20)
+    angle = random.uniform(0, math.tau)
+    angular_velocity = 0.05
+    line_length = min(surfaceSize) * 0.45
+    line_width = 3
     color_hue = 0
+    fade_surface = None
+
+    if SCREENSAVER_LINE_TRAIL:
+        fade_surface = pygame.Surface(surfaceSize, pygame.SRCALPHA)
+        fade_surface.fill((0, 0, 0, SCREENSAVER_TRAIL_ALPHA))
 
     import colorsys
 
@@ -291,23 +306,44 @@ def run_screensaver():
                     refresh()
                     return
 
-        # Update animation
+        # Update animation (bouncing center)
         x += vx
         y += vy
-        if x - radius < 0 or x + radius > surfaceSize[0]:
+        half_len = line_length / 2.0
+        cos_a = math.cos(angle)
+        sin_a = math.sin(angle)
+        extent_x = abs(cos_a) * half_len
+        extent_y = abs(sin_a) * half_len
+
+        if x - extent_x < 0 or x + extent_x > surfaceSize[0]:
             vx = -vx
             x += vx
-        if y - radius < 0 or y + radius > surfaceSize[1]:
+        if y - extent_y < 0 or y + extent_y > surfaceSize[1]:
             vy = -vy
             y += vy
+
+        # Rotate line and pulse length a bit
+        angle = (angle + angular_velocity) % math.tau
+        pulse = 0.80 + 0.20 * math.sin(time.time() * 2.0)
+        current_half_len = half_len * pulse
+        dx = math.cos(angle) * current_half_len
+        dy = math.sin(angle) * current_half_len
+
+        x1 = int(x - dx)
+        y1 = int(y - dy)
+        x2 = int(x + dx)
+        y2 = int(y + dy)
 
         color_hue = (color_hue + 3) % 360
         rgb = colorsys.hsv_to_rgb(color_hue / 360.0, 0.8, 0.9)
         color = tuple(int(c * 255) for c in rgb)
 
-        lcd.fill((0, 0, 0))
-        pygame.draw.circle(lcd, color, (int(x), int(y)), radius)
-        pygame.draw.circle(lcd, (255,255,255), (int(x), int(y)), 3)
+        if SCREENSAVER_LINE_TRAIL and fade_surface is not None:
+            lcd.blit(fade_surface, (0, 0))
+        else:
+            lcd.fill((0, 0, 0))
+        pygame.draw.line(lcd, color, (x1, y1), (x2, y2), line_width)
+        pygame.draw.circle(lcd, (255, 255, 255), (int(x), int(y)), 2)
         refresh()
 
 X = 0

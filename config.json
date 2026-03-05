@@ -11,6 +11,10 @@
     "debug_overlay": true,
     "clamp": true
   },
+  "screensaver": {
+    "line_trail": true,
+    "trail_alpha": 40
+  },
   "buttons": [
     {
       "id": 1,
