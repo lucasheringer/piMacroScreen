@@ -51,6 +51,26 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
 ```
 
+## Updating without losing local config
+
+If you keep local device settings in `config.json` (and credentials in `auth.json`), use:
+
+```bash
+chmod +x update_preserve_config.sh
+./update_preserve_config.sh
+```
+
+This script:
+- backs up `config.json` and `auth.json`
+- runs `git pull --ff-only`
+- restores your local copies after pull
+
+If you need custom pull args, pass them through:
+
+```bash
+./update_preserve_config.sh --rebase
+```
+
 ## 2) Configure USB HID gadget
 
 This project sends HID reports to `/dev/hidg0`, so the gadget device must exist first.
