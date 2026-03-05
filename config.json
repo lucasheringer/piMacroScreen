@@ -8,6 +8,7 @@
     "invert_y": false,
     "offset_x": -106,
     "offset_y": 0,
+    "debug_overlay": true,
     "clamp": true
   },
   "buttons": [

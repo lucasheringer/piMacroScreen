@@ -131,6 +131,7 @@ TOUCH_INVERT_Y = bool(t_cfg.get('invert_y', False))
 TOUCH_OFFSET_X = int(t_cfg.get('offset_x', 0))
 TOUCH_OFFSET_Y = int(t_cfg.get('offset_y', 0))
 TOUCH_CLAMP = bool(t_cfg.get('clamp', True))
+TOUCH_DEBUG_OVERLAY = bool(t_cfg.get('debug_overlay', False))
 tftDelta = (tftEnd [0] - tftOrig [0], tftEnd [1] - tftOrig [1])
 tftAbsDelta = (abs(tftEnd [0] - tftOrig [0]), abs(tftEnd [1] - tftOrig [1]))
 
@@ -175,6 +176,17 @@ def getPixelsFromCoordinates(coords):
         y = max(0, min(surfaceSize[1] - 1, y))
 
     return (int(x), int(y))
+
+
+def drawTouchDebugOverlay(raw_coords, pixel_coords):
+    drawButtons()
+    overlay_rect = pygame.Rect(4, 4, 230, 34)
+    pygame.draw.rect(lcd, (0, 0, 0), overlay_rect)
+    pygame.draw.rect(lcd, (255, 255, 255), overlay_rect, 1)
+    label = f"raw:{raw_coords[0]:4d},{raw_coords[1]:4d} px:{pixel_coords[0]:3d},{pixel_coords[1]:3d}"
+    txt = defaultFont.render(label, False, (255, 255, 0))
+    lcd.blit(txt, (8, 8))
+    refresh()
 
 # Function to load SVG icon and convert to pygame surface
 def load_svg_icon(svg_path, size=60):
@@ -298,6 +310,10 @@ def run_screensaver():
         pygame.draw.circle(lcd, (255,255,255), (int(x), int(y)), 3)
         refresh()
 
+X = 0
+Y = 0
+last_overlay_refresh = 0
+
 while True:
     r, w, xsel = select.select([touch], [], [], 0.01)
     if r:
@@ -308,12 +324,23 @@ while True:
                     X = event.value
                 elif event.code == 0:
                     Y = event.value
+
+                if TOUCH_DEBUG_OVERLAY and not screensaver_active:
+                    now = time.time()
+                    if now - last_overlay_refresh >= 0.04:
+                        p = getPixelsFromCoordinates((X, Y))
+                        drawTouchDebugOverlay((X, Y), p)
+                        last_overlay_refresh = now
             elif event.type == evdev.ecodes.EV_KEY:
                 if event.code == 330 and event.value == 1:  # Touch press
                     try:
                         p = getPixelsFromCoordinates((X, Y))
                     except Exception:
                         continue
+
+                    if TOUCH_DEBUG_OVERLAY and not screensaver_active:
+                        drawTouchDebugOverlay((X, Y), p)
+
                     print("Touch detected at Pixels: {0}:{1}".format(p[0], p[1]))
 
                     # Check which button was touched
