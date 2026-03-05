@@ -4,8 +4,10 @@
 # Modified by Jonathan Seyfert, 2022-01-22
 # to keep code from crashing when WiFi or IP is unavailable
 from subprocess import Popen, PIPE
+from pathlib import Path
 from time import sleep, perf_counter
 from datetime import datetime
+import os
 import board
 import digitalio
 import adafruit_character_lcd.character_lcd as characterlcd
@@ -62,6 +64,41 @@ def run_cmd(cmd):
     output = p.communicate()[0]
     return output.decode('ascii')
 
+
+def fit_line(text):
+    # Ensure each LCD line always matches the configured width.
+    return text[:lcd_columns].ljust(lcd_columns)
+
+
+def get_cpu_temp_c():
+    temp_file = Path('/sys/class/thermal/thermal_zone0/temp')
+    if not temp_file.exists():
+        return None
+    try:
+        raw = temp_file.read_text(encoding='ascii').strip()
+        return float(raw) / 1000.0
+    except (ValueError, OSError):
+        return None
+
+
+def get_load_avg():
+    try:
+        return os.getloadavg()[0]
+    except OSError:
+        return None
+
+
+def is_web_running():
+    return Popen("pgrep -f 'webserver.py'", shell=True, stdout=PIPE).wait() == 0
+
+
+def is_macro_running():
+    return Popen("pgrep -f 'macroKeys.py'", shell=True, stdout=PIPE).wait() == 0
+
+
+def is_hid_ready():
+    return Path('/dev/hidg0').exists()
+
 # wipe LCD screen before we start
 lcd.clear()
 
@@ -72,20 +109,50 @@ interface = find_interface()
 ip_address = parse_ip()
 timer = perf_counter()
 
+rotation_seconds = 30
+ip_refresh_seconds = 15
+status_refresh_seconds = 5
+
+status_timer = perf_counter() - status_refresh_seconds
+web_ok = False
+macro_ok = False
+hid_ok = False
+
 while True:
     # check for new IP addresses, at a slower rate than updating the clock
-    if perf_counter() - timer >= 15:
+    now = perf_counter()
+
+    if now - timer >= ip_refresh_seconds:
         interface = find_interface()
         ip_address = parse_ip()
-        timer = perf_counter()
+        timer = now
 
-    # date and time
-    lcd_line_1 = datetime.now().strftime('%b %d  %H:%M:%S\n')
+    if now - status_timer >= status_refresh_seconds:
+        web_ok = is_web_running()
+        macro_ok = is_macro_running()
+        hid_ok = is_hid_ready()
+        status_timer = now
 
-    # current ip address
-    lcd_line_2 = "IP " + ip_address
+    page_index = int(now / rotation_seconds) % 3
+
+    if page_index == 0:
+        lcd_line_1 = fit_line(datetime.now().strftime('%b %d %H:%M:%S'))
+        lcd_line_2 = fit_line("IP " + ip_address)
+    elif page_index == 1:
+        cpu_temp = get_cpu_temp_c()
+        load = get_load_avg()
+        cpu_text = "CPU --.-C" if cpu_temp is None else f"CPU {cpu_temp:4.1f}C"
+        load_text = "Load -.--" if load is None else f"Load {load:.2f}"
+        lcd_line_1 = fit_line(cpu_text)
+        lcd_line_2 = fit_line(load_text)
+    else:
+        web_text = "OK" if web_ok else "NO"
+        hid_text = "OK" if hid_ok else "NO"
+        macro_text = "RUN" if macro_ok else "DOWN"
+        lcd_line_1 = fit_line(f"WEB:{web_text} HID:{hid_text}")
+        lcd_line_2 = fit_line(f"MACRO:{macro_text}")
 
     # combine both lines into one update to the display
-    lcd.message = lcd_line_1 + lcd_line_2
+    lcd.message = lcd_line_1 + "\n" + lcd_line_2
 
     sleep(1)
