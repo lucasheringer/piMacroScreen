@@ -99,6 +99,56 @@ def is_macro_running():
 def is_hid_ready():
     return Path('/dev/hidg0').exists()
 
+
+def animate_scrolling_text(frame):
+    """Scrolling marquee text animation."""
+    message = "piMacroScreen - Built with vibe conding!"
+    # Calculate position for smooth scrolling
+    pos = frame % len(message)
+    # Create a continuous loop by appending message to itself
+    extended = message + message
+    line1 = extended[pos:pos + lcd_columns]
+    line2 = extended[pos + 3:pos + 3 + lcd_columns]  # Offset for visual effect
+    return fit_line(line1), fit_line(line2)
+
+
+def animate_loading_bar(frame):
+    """Animated loading bar."""
+    # Bar fills and empties
+    total_width = lcd_columns - 2  # Account for [ and ]
+    position = frame % (total_width * 2)
+    
+    if position < total_width:
+        # Filling up
+        filled = position
+    else:
+        # Draining
+        filled = total_width * 2 - position
+    
+    bar = '[' + ('=' * filled) + (' ' * (total_width - filled)) + ']'
+    percent = int((filled / total_width) * 100)
+    
+    line1 = fit_line("Loading...")
+    line2 = fit_line(f"{bar}")
+    return line1, line2
+
+
+def animate_bouncing_ball(frame):
+    """Bouncing ball animation."""
+    # Ball bounces horizontally on line 2
+    max_pos = lcd_columns - 1
+    position = frame % (max_pos * 2)
+    
+    if position < max_pos:
+        ball_pos = position
+    else:
+        ball_pos = max_pos * 2 - position
+    
+    line1 = fit_line("Bouncing Ball!")
+    line2 = ' ' * ball_pos + 'O' + ' ' * (max_pos - ball_pos)
+    return fit_line(line1), fit_line(line2)
+
+
 # wipe LCD screen before we start
 lcd.clear()
 
@@ -118,6 +168,9 @@ web_ok = False
 macro_ok = False
 hid_ok = False
 
+# Animation frame counter (updates every loop iteration)
+animation_frame = 0
+
 while True:
     # check for new IP addresses, at a slower rate than updating the clock
     now = perf_counter()
@@ -133,26 +186,40 @@ while True:
         hid_ok = is_hid_ready()
         status_timer = now
 
-    page_index = int(now / rotation_seconds) % 3
+    # 6 total pages: 3 info pages + 3 animation pages
+    page_index = int(now / rotation_seconds) % 6
 
     if page_index == 0:
+        # Page 1: Date/Time + IP
         lcd_line_1 = fit_line(datetime.now().strftime('%b %d %H:%M:%S'))
         lcd_line_2 = fit_line("IP " + ip_address)
     elif page_index == 1:
+        # Page 2: CPU Temp + Load
         cpu_temp = get_cpu_temp_c()
         load = get_load_avg()
         cpu_text = "CPU --.-C" if cpu_temp is None else f"CPU {cpu_temp:4.1f}C"
         load_text = "Load -.--" if load is None else f"Load {load:.2f}"
         lcd_line_1 = fit_line(cpu_text)
         lcd_line_2 = fit_line(load_text)
-    else:
+    elif page_index == 2:
+        # Page 3: Service Health
         web_text = "OK" if web_ok else "NO"
         hid_text = "OK" if hid_ok else "NO"
         macro_text = "RUN" if macro_ok else "DOWN"
         lcd_line_1 = fit_line(f"WEB:{web_text} HID:{hid_text}")
         lcd_line_2 = fit_line(f"MACRO:{macro_text}")
+    elif page_index == 3:
+        # Page 4: Scrolling marquee animation
+        lcd_line_1, lcd_line_2 = animate_scrolling_text(animation_frame)
+    elif page_index == 4:
+        # Page 5: Loading bar animation
+        lcd_line_1, lcd_line_2 = animate_loading_bar(animation_frame)
+    else:
+        # Page 6: Bouncing ball animation
+        lcd_line_1, lcd_line_2 = animate_bouncing_ball(animation_frame)
 
     # combine both lines into one update to the display
     lcd.message = lcd_line_1 + "\n" + lcd_line_2
 
+    animation_frame += 1
     sleep(1)
