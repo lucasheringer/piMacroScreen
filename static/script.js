@@ -717,7 +717,16 @@ async function waitForServerReconnect(maxAttempts = 15, delayMs = 1000) {
     return false;
 }
 
+function closePiActionsMenu() {
+    const menu = document.querySelector('.pi-actions-menu');
+    if (menu) {
+        menu.removeAttribute('open');
+    }
+}
+
 async function restartSystem() {
+    closePiActionsMenu();
+
     if (!confirm('Are you sure you want to restart the Raspberry Pi now?')) {
         return;
     }
@@ -756,6 +765,8 @@ async function restartSystem() {
 }
 
 async function shutdownSystem() {
+    closePiActionsMenu();
+
     if (!confirm('Are you sure you want to shut down the Raspberry Pi now?')) {
         return;
     }
@@ -884,6 +895,18 @@ function setupEventListeners() {
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal')) {
             closeModal(e.target.id);
+        }
+
+        const piActionsMenu = document.querySelector('.pi-actions-menu');
+        if (piActionsMenu && !piActionsMenu.contains(e.target)) {
+            closePiActionsMenu();
+        }
+    });
+
+    // Close Pi Actions menu with Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closePiActionsMenu();
         }
     });
 }

@@ -84,6 +84,11 @@ body {
     :root:not([data-theme="light"]) .button-info-label {
         color: #b8b8b8;
     }
+
+    :root:not([data-theme="light"]) .pi-actions-dropdown {
+        background: #2b2b2b;
+        border-color: #3f3f3f;
+    }
 }
 
 :root[data-theme="dark"] body {
@@ -137,6 +142,11 @@ body {
     color: #b8b8b8;
 }
 
+:root[data-theme="dark"] .pi-actions-dropdown {
+    background: #2b2b2b;
+    border-color: #3f3f3f;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -169,33 +179,41 @@ header h1 {
     gap: 10px;
 }
 
-.power-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.pi-actions-menu {
     position: relative;
-    margin-left: 2px;
-    padding-left: 12px;
 }
 
-.power-actions::before {
-    content: '';
+.pi-actions-menu summary {
+    list-style: none;
+}
+
+.pi-actions-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.pi-actions-dropdown {
     position: absolute;
-    left: 0;
-    top: 50%;
-    width: 1px;
-    height: 28px;
-    transform: translateY(-50%);
-    background: currentColor;
-    opacity: 0.25;
+    right: 0;
+    top: calc(100% + 8px);
+    display: none;
+    min-width: 170px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    z-index: 100;
 }
 
-.power-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.75;
+.pi-actions-menu[open] .pi-actions-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pi-actions-dropdown .btn {
+    width: 100%;
+    text-align: left;
 }
 
 .user-menu {
@@ -409,6 +427,12 @@ header h1 {
     opacity: 0.9;
     cursor: wait;
     padding-left: 42px;
+}
+
+.pi-actions-dropdown #restartSystemBtn:disabled,
+.pi-actions-dropdown #shutdownBtn:disabled {
+    opacity: 0.9;
+    cursor: wait;
 }
 
 #restartBtn:disabled::before {
@@ -711,15 +735,19 @@ header h1 {
         flex-direction: column;
     }
 
-    .power-actions {
+    .pi-actions-menu {
         width: 100%;
-        justify-content: center;
-        margin-left: 0;
-        padding-left: 0;
     }
 
-    .power-actions::before {
-        display: none;
+    .pi-actions-menu > summary {
+        width: 100%;
+        text-align: center;
+    }
+
+    .pi-actions-dropdown {
+        position: static;
+        margin-top: 8px;
+        width: 100%;
     }
 
     .buttons-grid {
