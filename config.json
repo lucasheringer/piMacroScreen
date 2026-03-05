@@ -1,5 +1,15 @@
 {
   "background": "bg.png",
+  "touch_calibration": {
+    "orig": [560, 3856],
+    "end": [3623, 2277],
+    "swap_xy": false,
+    "invert_x": false,
+    "invert_y": false,
+    "offset_x": -106,
+    "offset_y": 0,
+    "clamp": true
+  },
   "buttons": [
     {
       "id": 1,

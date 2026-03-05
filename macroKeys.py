@@ -122,8 +122,15 @@ refresh()
 
 # Used to map touch event from the screen hardware to the pygame surface pixels. 
 # (Those values have been found empirically, but I'm working on a simple interactive calibration tool
-tftOrig = (150, 3750)
-tftEnd = (3750, 180)
+t_cfg = CONFIG.get('touch_calibration', {})
+tftOrig = tuple(t_cfg.get('orig', [150, 3750]))
+tftEnd = tuple(t_cfg.get('end', [3750, 180]))
+TOUCH_SWAP_XY = bool(t_cfg.get('swap_xy', False))
+TOUCH_INVERT_X = bool(t_cfg.get('invert_x', False))
+TOUCH_INVERT_Y = bool(t_cfg.get('invert_y', False))
+TOUCH_OFFSET_X = int(t_cfg.get('offset_x', 0))
+TOUCH_OFFSET_Y = int(t_cfg.get('offset_y', 0))
+TOUCH_CLAMP = bool(t_cfg.get('clamp', True))
 tftDelta = (tftEnd [0] - tftOrig [0], tftEnd [1] - tftOrig [1])
 tftAbsDelta = (abs(tftEnd [0] - tftOrig [0]), abs(tftEnd [1] - tftOrig [1]))
 
@@ -141,15 +148,32 @@ print(touch)
 
 # Here we convert the evdev "hardware" touch coordinates into pygame surface pixel coordinates
 def getPixelsFromCoordinates(coords):
+    raw_x, raw_y = coords
+    if TOUCH_SWAP_XY:
+        raw_x, raw_y = raw_y, raw_x
+
     # TODO check divide by 0!
     if tftDelta [0] < 0:
-        x = float(tftAbsDelta [0] - coords [0] + tftEnd [0]) / float(tftAbsDelta [0]) * float(surfaceSize [0])
+        x = float(tftAbsDelta [0] - raw_x + tftEnd [0]) / float(tftAbsDelta [0]) * float(surfaceSize [0])
     else:    
-        x = float(coords [0] - tftOrig [0]) / float(tftAbsDelta [0]) * float(surfaceSize [0])
+        x = float(raw_x - tftOrig [0]) / float(tftAbsDelta [0]) * float(surfaceSize [0])
     if tftDelta [1] < 0:
-        y = float(tftAbsDelta [1] - coords [1] + tftEnd [1]) / float(tftAbsDelta [1]) * float(surfaceSize [1])
+        y = float(tftAbsDelta [1] - raw_y + tftEnd [1]) / float(tftAbsDelta [1]) * float(surfaceSize [1])
     else:        
-        y = float(coords [1] - tftOrig [1]) / float(tftAbsDelta [1]) * float(surfaceSize [1])
+        y = float(raw_y - tftOrig [1]) / float(tftAbsDelta [1]) * float(surfaceSize [1])
+
+    if TOUCH_INVERT_X:
+        x = float(surfaceSize[0] - 1) - x
+    if TOUCH_INVERT_Y:
+        y = float(surfaceSize[1] - 1) - y
+
+    x += TOUCH_OFFSET_X
+    y += TOUCH_OFFSET_Y
+
+    if TOUCH_CLAMP:
+        x = max(0, min(surfaceSize[0] - 1, x))
+        y = max(0, min(surfaceSize[1] - 1, y))
+
     return (int(x), int(y))
 
 # Function to load SVG icon and convert to pygame surface
