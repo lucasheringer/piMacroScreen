@@ -1,13 +1,13 @@
 {
   "background": "bg.png",
   "touch_calibration": {
-    "orig": [540, 3856],
-    "end": [3823, 2477],
+    "orig": [479, 3868],
+    "end": [3551, 2366],
     "swap_xy": false,
     "invert_x": false,
     "invert_y": false,
-    "offset_x": -140,
-    "offset_y": -140,
+    "offset_x": -40,
+    "offset_y": -40,
     "debug_overlay": true,
     "clamp": true
   },
