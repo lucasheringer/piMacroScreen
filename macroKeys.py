@@ -132,6 +132,9 @@ TOUCH_OFFSET_X = int(t_cfg.get('offset_x', 0))
 TOUCH_OFFSET_Y = int(t_cfg.get('offset_y', 0))
 TOUCH_CLAMP = bool(t_cfg.get('clamp', True))
 TOUCH_DEBUG_OVERLAY = bool(t_cfg.get('debug_overlay', False))
+TOUCH_HIT_MARGIN_X = int(t_cfg.get('hit_margin_x', 12))
+TOUCH_HIT_MARGIN_Y = int(t_cfg.get('hit_margin_y', 12))
+TOUCH_DEBUG_HITBOX = bool(t_cfg.get('debug_hitbox', False))
 tftDelta = (tftEnd [0] - tftOrig [0], tftEnd [1] - tftOrig [1])
 tftAbsDelta = (abs(tftEnd [0] - tftOrig [0]), abs(tftEnd [1] - tftOrig [1]))
 
@@ -214,6 +217,12 @@ BUTTON_ROWS = 2
 BUTTON_WIDTH = surfaceSize[0] // BUTTON_COLS  # 106 pixels
 BUTTON_HEIGHT = surfaceSize[1] // BUTTON_ROWS  # 120 pixels
 
+# Keep touch hitbox smaller than drawn cell to prevent adjacent button overlap.
+MAX_MARGIN_X = max(0, (BUTTON_WIDTH // 2) - 2)
+MAX_MARGIN_Y = max(0, (BUTTON_HEIGHT // 2) - 2)
+HIT_MARGIN_X = max(0, min(TOUCH_HIT_MARGIN_X, MAX_MARGIN_X))
+HIT_MARGIN_Y = max(0, min(TOUCH_HIT_MARGIN_Y, MAX_MARGIN_Y))
+
 # Create buttons from configuration
 buttons = []
 for button_config in CONFIG.get('buttons', []):
@@ -231,6 +240,12 @@ for button_config in CONFIG.get('buttons', []):
     btn_data = {
         'id': button_id,
         'rect': pygame.Rect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT),
+        'hit_rect': pygame.Rect(
+            x + HIT_MARGIN_X,
+            y + HIT_MARGIN_Y,
+            BUTTON_WIDTH - (2 * HIT_MARGIN_X),
+            BUTTON_HEIGHT - (2 * HIT_MARGIN_Y)
+        ),
         'color': tuple(button_config.get('color', [100, 100, 100])),
         'pressed_color': tuple(button_config.get('pressed_color', [255, 0, 0])),
         'icon': icon,
@@ -244,6 +259,8 @@ def drawButtons():
     lcd.blit(bg, (0, 0))
     for btn in buttons:
         pygame.draw.rect(lcd, btn['color'], btn['rect'], 3)  # Draw border
+        if TOUCH_DEBUG_HITBOX:
+            pygame.draw.rect(lcd, (0, 255, 255), btn['hit_rect'], 1)
         # Draw icon or button number in center
         if btn['icon'] is not None:
             icon_rect = btn['icon'].get_rect(center=btn['rect'].center)
@@ -381,7 +398,7 @@ while True:
 
                     # Check which button was touched
                     for btn in buttons:
-                        if btn['rect'].collidepoint(p):
+                        if btn['hit_rect'].collidepoint(p):
                             print("==> BUTTON {0} PRESSED! <==".format(btn['id']))
                             
                             # Execute action based on configuration

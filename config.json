@@ -8,6 +8,9 @@
     "invert_y": false,
     "offset_x": -40,
     "offset_y": -40,
+    "hit_margin_x": 12,
+    "hit_margin_y": 12,
+    "debug_hitbox": true,
     "debug_overlay": true,
     "clamp": true
   },
