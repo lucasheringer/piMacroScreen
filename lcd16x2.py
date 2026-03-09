@@ -187,7 +187,7 @@ while True:
         status_timer = now
 
     # 6 total pages: 3 info pages + 3 animation pages
-    page_index = int(now / rotation_seconds) % 6
+    page_index = int(now / rotation_seconds) % 2
 
     if page_index == 0:
         # Page 1: Date/Time + IP
@@ -201,22 +201,22 @@ while True:
         load_text = "Load -.--" if load is None else f"Load {load:.2f}"
         lcd_line_1 = fit_line(cpu_text)
         lcd_line_2 = fit_line(load_text)
-    elif page_index == 2:
+    else :
         # Page 3: Service Health
         web_text = "OK" if web_ok else "NO"
         hid_text = "OK" if hid_ok else "NO"
         macro_text = "RUN" if macro_ok else "DOWN"
         lcd_line_1 = fit_line(f"WEB:{web_text} HID:{hid_text}")
         lcd_line_2 = fit_line(f"MACRO:{macro_text}")
-    elif page_index == 3:
-        # Page 4: Scrolling marquee animation
-        lcd_line_1, lcd_line_2 = animate_scrolling_text(animation_frame)
-    elif page_index == 4:
-        # Page 5: Loading bar animation
-        lcd_line_1, lcd_line_2 = animate_loading_bar(animation_frame)
-    else:
-        # Page 6: Bouncing ball animation
-        lcd_line_1, lcd_line_2 = animate_bouncing_ball(animation_frame)
+    # elif page_index == 3:
+    #     # Page 4: Scrolling marquee animation
+    #     lcd_line_1, lcd_line_2 = animate_scrolling_text(animation_frame)
+    # elif page_index == 4:
+    #     # Page 5: Loading bar animation
+    #     lcd_line_1, lcd_line_2 = animate_loading_bar(animation_frame)
+    # else:
+    #     # Page 6: Bouncing ball animation
+    #     lcd_line_1, lcd_line_2 = animate_bouncing_ball(animation_frame)
 
     # combine both lines into one update to the display
     lcd.message = lcd_line_1 + "\n" + lcd_line_2
